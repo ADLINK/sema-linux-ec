@@ -22,7 +22,7 @@
 
 
 ### Developer's Guide (how to use EAPI and Sysfs): 
-* See [documentation](https://adlinktech.github.io/sema/DeveloperGuide.html) for more details.
+* See [documentation](https://www.adlinktech.com/Products/DownloadMDownload?lang=en&pdNo=1274&MainCategory=Industrial_IoT_and_Cloud_solutions&kind=M) for more details.
 
    
 ### Other information:
