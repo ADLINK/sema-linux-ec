@@ -8,6 +8,7 @@
 #include <linux/nvmem-provider.h>
 #include <linux/delay.h>
 #include <linux/sysfs.h>
+#include <linux/version.h>
 #include "adl-ec.h"
 
 struct kobject *kobj_ref;
@@ -249,7 +250,11 @@ static int adl_bmc_nvmem_probe(struct platform_device *pdev)
 }
 
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void adl_bmc_nvmem_remove(struct platform_device *pdev)
+#else
 static int adl_bmc_nvmem_remove(struct platform_device *pdev)
+#endif
 {
 
     struct nvmem_device *nvdev;
@@ -259,7 +264,9 @@ static int adl_bmc_nvmem_remove(struct platform_device *pdev)
     kobject_put(kobj_ref);
 
     nvmem_unregister(nvdev);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
     return 0;
+#endif
 
 }
 

@@ -16,6 +16,7 @@
 #include <linux/acpi.h>
 #include <linux/io.h>
 #include <linux/delay.h>
+#include <linux/version.h>
 
 #include "adl-ec.h"
 
@@ -990,7 +991,11 @@ EXIT_DEV_REMOVE_SILENT:
 	return err;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void adl_bmc_hwmon_remove(struct platform_device *pdev)
+#else
 static int adl_bmc_hwmon_remove(struct platform_device *pdev)
+#endif
 {
 	struct adl_bmc_hwmon_data *hwmon_data = platform_get_drvdata(pdev);
 
@@ -998,7 +1003,9 @@ static int adl_bmc_hwmon_remove(struct platform_device *pdev)
 	adl_bmc_hwmon_remove_sysfs(pdev);
 
 	devm_kfree(&pdev->dev, hwmon_data);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	return 0;
+#endif
 }
 
 static struct platform_driver adl_bmc_hwmon_driver = {

@@ -481,13 +481,19 @@ static int adl_ec_gpio_probe(struct platform_device *pdev)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void adl_ec_gpio_remove(struct platform_device *pdev)
+#else
 static int adl_ec_gpio_remove(struct platform_device *pdev)
+#endif
 {
 	device_destroy(class_adl_gpio, devdrv);
 	class_destroy(class_adl_gpio);
 	cdev_del(&cdev);
 	unregister_chrdev(devdrv, "gpio_adl");
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	return 0;
+#endif
 }
 
 static struct platform_driver adl_ec_gpio_driver = {

@@ -551,7 +551,11 @@ static int adl_ec_acpi_probe(struct platform_device *pdev)
     return mfd_add_devices(adl_bmc_dev->dev, -1, adl_bmc_devs, ARRAY_SIZE(adl_bmc_devs), NULL, 0, NULL);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void adl_ec_acpi_remove(struct platform_device *pdev)
+#else
 static int adl_ec_acpi_remove(struct platform_device *pdev)
+#endif
 {
     debug_printk("==> %s\n",__func__);
 
@@ -562,7 +566,9 @@ static int adl_ec_acpi_remove(struct platform_device *pdev)
 
     mfd_remove_devices (adl_bmc_dev->dev);
     debug_printk("<== %s\n",__func__);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
     return 0;
+#endif
 }
 
 

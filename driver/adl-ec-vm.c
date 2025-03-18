@@ -210,7 +210,11 @@ static int adl_bmc_vm_probe(struct platform_device *pdev)
 
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void adl_bmc_vm_remove(struct platform_device *pdev)
+#else
 static int adl_bmc_vm_remove(struct platform_device *pdev)
+#endif
 {
 	struct adl_bmc_vm_data *vm_data = platform_get_drvdata(pdev);
 	debug_printk("Remove...............\n");
@@ -223,7 +227,9 @@ static int adl_bmc_vm_remove(struct platform_device *pdev)
 	cdev_del(&cdev);
 	unregister_chrdev(devdrv,"adl_vm");
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	return 0;
+#endif
 }
 
 static struct platform_driver adl_bmc_vm_driver = {

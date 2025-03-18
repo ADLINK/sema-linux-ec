@@ -9,6 +9,7 @@
 #include <linux/sysfs.h>
 #include <linux/device.h>
 #include <linux/string.h>
+#include <linux/version.h>
 
 #include "adl-ec.h"
 
@@ -1324,7 +1325,11 @@ ret_err:
 
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void boardinfo_remove(struct platform_device *pdev)
+#else
 static int boardinfo_remove(struct platform_device *pdev)
+#endif
 {
     sysfs_remove_file(kernel_kobj, &attr0.attr);
     sysfs_remove_file(kernel_kobj, &attr1.attr);
@@ -1369,7 +1374,9 @@ static int boardinfo_remove(struct platform_device *pdev)
     sysfs_remove_file(kernel_kobj, &attr40.attr); 
     kobject_put(kobj_ref);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
     return 0;
+#endif
 }
 
 static struct platform_driver adl_bmc_boardinfo_driver = {

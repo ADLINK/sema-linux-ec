@@ -316,7 +316,11 @@ static int adl_bmc_wdt_probe(struct platform_device *pdev)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+void  adl_bmc_wdt_remove(struct platform_device *pdev)
+#else
 static int adl_bmc_wdt_remove(struct platform_device *pdev)
+#endif
 {
 	struct adl_bmc_wdt *awdt = platform_get_drvdata(pdev);
 	
@@ -333,7 +337,9 @@ static int adl_bmc_wdt_remove(struct platform_device *pdev)
 	debug_printk(" %s called.......\n", __func__);
 
 	kfree(awdt);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	return 0;
+#endif
 }
 
 
