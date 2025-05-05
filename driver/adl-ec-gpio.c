@@ -19,18 +19,12 @@
 #define ADL_BMC_OFS_GPIO_OUT_PORT_EXT            0x87
 #define ADL_BMC_OFS_GPIO_DIR_EXT		 0x85
 #define ADL_BMC_OFS_GPIO_CAP			 0x15
-#define ADL_BMC_OFS_GPIO_INT_FLAG                0x68
-#define ADL_BMC_OFS_GPIO_INT_TRIGGER             0x64
-#define ADL_BMC_OFS_GPIO_INT_ENABLE              0x0F
 
 #define GET_GPIO_DIR    _IOR('a','1',uint32_t *)
-#define SET_GPIO_INT	_IOWR('a','2',uint32_t *)
-#define GET_GPIO_INT	_IOWR('a','3',uint32_t *)
-#define CLR_GPIO_INT	_IOWR('a','4',uint32_t *)
-#define GET_LEVEL 	_IOR('a', 'b', int32_t *)
-#define SET_LEVEL  	_IOWR('a', 'c', struct gpiostruct *)
-#define OP_DIRECTION  	_IOWR('a', 'd', struct gpiostruct *)
-#define IN_DIRECTION  	_IOWR('a', 'e', int32_t *)
+#define GET_LEVEL 	_IOR('a', '2', int32_t *)
+#define SET_LEVEL  	_IOWR('a', '3', struct gpiostruct *)
+#define OP_DIRECTION  	_IOWR('a', '4', struct gpiostruct *)
+#define IN_DIRECTION  	_IOWR('a', '5', int32_t *)
 
 dev_t devdrv;
 struct class *class_adl_gpio;
@@ -228,44 +222,6 @@ static int adl_gpio_get_direction(uint32_t* value)
 	return 0;
 }
 
-static int adl_gpio_set_interrupt(uint32_t value)
-{
-	int ret;
-	uint8_t reg = 0, len = 1;
-
-	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_INT_TRIGGER,(uint8_t *)&value, len,EC_REGION_1);
-
-	if(ret == 0)
-	{
-		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_INT_ENABLE, &reg, len, EC_REGION_1);
-		reg |= 0x01;
-		ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_INT_ENABLE,&reg, len, EC_REGION_1);
-	}
-
-        return ret;
-}
-
-static int adl_gpio_get_interrupt(uint32_t* value)
-{
-	int ret;
-	uint8_t len = 1;
-
-	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_INT_FLAG,(uint8_t *)value, len, EC_REGION_1);
-
-        return ret;
-}
-
-static int adl_gpio_clr_interrupt(uint32_t clear)
-{
-	int ret;
-	uint8_t len = 1;
-	
-	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_INT_TRIGGER, (uint8_t *)&clear, len, EC_REGION_1);
-	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_INT_FLAG, (uint8_t *)&clear, len, EC_REGION_1);
-
-        return ret;
-}
-
 static const struct gpio_chip adl_gpio_gc = {
 	.label = "adl-ec-gpio",
 	.owner = THIS_MODULE,
@@ -312,7 +268,7 @@ int release(struct inode *inode, struct file *file)
 static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 {
 	int RetVal;
-	uint32_t gpio_dir, trigger,value;
+	uint32_t gpio_dir;
 	switch(cmd)
         {
                 case GET_GPIO_DIR:
@@ -371,40 +327,6 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 			adl_gpio_direction_input(NULL,gpionum);
 		}
 		break;
-		case SET_GPIO_INT:
-                {
-                        if((RetVal = copy_from_user(&trigger,(uint32_t *)arg,sizeof(trigger)))!=0)
-                        {
-                                return -EFAULT;
-                        }
-
-                        RetVal=adl_gpio_set_interrupt(trigger);
-                }
-                break;
-		case GET_GPIO_INT:
-                {
-                        if((RetVal = copy_from_user(&value,(uint32_t *)arg,sizeof(value)))!=0)
-                        {
-                                return -EFAULT;
-                        }
-
-                        RetVal=adl_gpio_get_interrupt(&value);
-
-                        if((RetVal = copy_to_user((uint32_t *)arg,&value,sizeof(value)))!=0)
-                        {
-                                return -EFAULT;
-                        }
-                }
-                break;
-		case CLR_GPIO_INT:
-                {
-                        if((RetVal = copy_from_user(&value, (uint32_t *)arg, sizeof(value)))!=0)
-                        {
-                                return -EFAULT;
-                        }
-                        RetVal=adl_gpio_clr_interrupt(value);
-                }
-                break;
                 default:
                         return -1;
         }

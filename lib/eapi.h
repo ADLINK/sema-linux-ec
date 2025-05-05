@@ -40,6 +40,12 @@
 
 #define EAPI_VERSION EAPI_VER_CREATE(EAPI_VER, EAPI_REVISION, 0)
 
+#define SEMA_VERSION_MAJOR 4
+#define SEMA_VERSION_MINOR 3
+#define SEMA_VERSION_ADDON 7
+#define SEMA_LIB_VERSION EAPI_VER_CREATE(SEMA_VERSION_MAJOR, SEMA_VERSION_MINOR, SEMA_VERSION_ADDON)
+
+
  /*
  *
  *      S T O R A G E
@@ -67,6 +73,135 @@
  *   Use Alignment Capabilities information to correctly align write access.
  */
 #define EAPI_STATUS_INVALID_BLOCK_LENGTH    EAPI_UINT32_C(0xFFFFFEFD)
+
+ /***
+ B O A R D
+ I N F O M A T I O N
+ S T R I N G S
+ **/
+
+#define EAPI_ID_BOARD_MANUFACTURER_STR		EAPI_UINT32_C(0) 
+/* Board Manufacturer Name String */
+#define EAPI_ID_BOARD_NAME_STR				EAPI_UINT32_C(1)
+/* Board Name String */
+#define EAPI_ID_BOARD_REVISION_STR			EAPI_UINT32_C(2) 
+/* Board Name String */
+#define EAPI_ID_BOARD_SERIAL_STR			EAPI_UINT32_C(3) 
+ /* Board Serial Number String */
+#define EAPI_ID_BOARD_BIOS_REVISION_STR		EAPI_UINT32_C(4) 
+ /* Board Bios Revision String */
+#define EAPI_ID_BOARD_HW_REVISION_STR		EAPI_UINT32_C(5) 
+ /* Board Hardware Revision String */
+#define EAPI_ID_BOARD_PLATFORM_TYPE_STR		EAPI_UINT32_C(6) 
+ /* Platform ID(ETX, COM Express,etc...) */
+
+#define EAPI_SEMA_ID_BOARD_BOOT_VERSION_STR			EAPI_UINT32_C(7)
+/* Boot version string */
+#define EAPI_SEMA_ID_BOARD_APPLICATION_VERSION_STR	EAPI_UINT32_C(8)
+/* Firmware application version string */
+#define EAPI_SEMA_ID_BOARD_CHIPSET_ID_STR			EAPI_UINT32_C(9)
+/* Chipset ID string */
+#define EAPI_SEMA_ID_BOARD_RESTART_EVENT_STR		EAPI_UINT32_C(10)
+/* Restart Event string */
+#define EAPI_SEMA_ID_BOARD_DEVICE_ID_STR			EAPI_UINT32_C(11)
+/* Device ID string */
+#define EAPI_SEMA_ID_BOARD_REPAIR_DATE_STR			EAPI_UINT32_C(12)
+/* Last Repair Date */
+#define EAPI_SEMA_ID_BOARD_MANUFACTURE_DATE_STR		EAPI_UINT32_C(13)
+/* Manufacture date */
+#define EAPI_SEMA_ID_BOARD_MAC_1_STRING				EAPI_UINT32_C(14)
+/* MAC address 1 on module */
+#define EAPI_SEMA_ID_BOARD_MAC_2_STRING				EAPI_UINT32_C(15)
+/* MAC address 2 on module */
+#define EAPI_SEMA_ID_BOARD_2ND_HW_REVISION_STR		EAPI_UINT32_C(16)
+/*2nd HW revision string */
+#define EAPI_SEMA_ID_BOARD_2ND_SERIAL_STR			EAPI_UINT32_C(17)
+/*2nd HW serial string */
+
+
+
+ /***
+ B O A R D
+ I N F O M A T I O N
+ V A L U E S
+ **/
+
+ /*EAPI Specification * Revision I.E. The * EAPI Spec Version * Bits 31-24, Revision * 23-16, 15-0 always 0* Used to implement * this interface*/
+ /*IDS */
+
+#define EAPI_ID_GET_EAPI_SPEC_VERSION			EAPI_UINT32_C(0)
+
+#define EAPI_ID_BOARD_BOOT_COUNTER_VAL			EAPI_UINT32_C(1)
+/*Units = Boots */
+
+#define EAPI_ID_BOARD_RUNNING_TIME_METER_VAL	EAPI_UINT32_C(2)
+/*Units = Minutes */
+
+#define EAPI_ID_BOARD_PNPID_VAL					EAPI_UINT32_C(3)
+/*Encoded PNP ID * Format * (Compressed ASCII)*/
+
+#define EAPI_ID_BOARD_PLATFORM_REV_VAL			EAPI_UINT32_C(4) 
+/*Platform Revision * I.E. The PICMG Spec * Version Bits 31-24,* Revision 23-16, * 15-0 always 0*/
+
+
+#define EAPI_ID_BOARD_DRIVER_VERSION_VAL		EAPI_UINT32_C(0x10000) 
+/*Vendor Specific * (Optional) */
+#define EAPI_ID_BOARD_LIB_VERSION_VAL			EAPI_UINT32_C(0x10001) 
+/*Vendor Specific* (Optional) */
+#define EAPI_SEMA_ID_BOARD_POWER_UP_TIME		EAPI_UINT32_C(0x10002)
+#define EAPI_SEMA_ID_BOARD_RESTART_EVENT		EAPI_UINT32_C(0x10003)
+#define EAPI_SEMA_ID_BOARD_CAPABILITIES			EAPI_UINT32_C(0x10004)
+#define EAPI_SEMA_ID_BOARD_CAPABILITIES_EX		EAPI_UINT32_C(0x10005)
+#define EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP		EAPI_UINT32_C(0x10006)
+#define EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP		EAPI_UINT32_C(0x10007)
+#define EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP	EAPI_UINT32_C(0x10008)
+#define EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP			EAPI_UINT32_C(0x10009)
+#define EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP			EAPI_UINT32_C(0x10010)
+#define EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP		EAPI_UINT32_C(0x10011)
+#define EAPI_SEMA_ID_BOARD_MAIN_CURRENT				EAPI_UINT32_C(0x10012)
+#define EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP			EAPI_UINT32_C(0x10013)
+#define EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MIN_TEMP		EAPI_UINT32_C(0x10014)
+#define EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MAX_TEMP		EAPI_UINT32_C(0x10015)
+#define EAPI_SEMA_ID_BOARD_2ND_SYSTEM_STARTUP_TEMP	EAPI_UINT32_C(0x10016)
+#define EAPI_SEMA_ID_BOARD_POWER_CYCLE				EAPI_UINT32_C(0x10017)
+#define EAPI_SEMA_ID_BOARD_BMC_FLAG					EAPI_UINT32_C(0x10018)
+#define EAPI_SEMA_ID_BOARD_BMC_STATUS				EAPI_UINT32_C(0x10019)
+#define EAPI_SEMA_ID_IO_CURRENT						EAPI_UINT32_C(0x10020)
+
+#define EAPI_ID_HWMON_CPU_TEMP					EAPI_UINT32_C(0x20000) 
+/*0.1 Kelvins */
+#define EAPI_ID_HWMON_CHIPSET_TEMP				EAPI_UINT32_C(0x20001) 
+/*0.1 Kelvins */
+#define EAPI_ID_HWMON_SYSTEM_TEMP				EAPI_UINT32_C(0x20002)
+/*0.1 Kelvins */
+#define EAPI_ID_HWMON_VOLTAGE_VCORE				EAPI_UINT32_C(0x21004) 
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_2V5				EAPI_UINT32_C(0x21008)
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_3V3				EAPI_UINT32_C(0x2100C)
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_VBAT				EAPI_UINT32_C(0x21010)
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_5V				EAPI_UINT32_C(0x21014)
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_5VSB				EAPI_UINT32_C(0x21018)
+/*millivolts */
+#define EAPI_ID_HWMON_VOLTAGE_12V				EAPI_UINT32_C(0x2101C)
+/*millivolts */
+#define EAPI_ID_HWMON_FAN_CPU					EAPI_UINT32_C(0x22000)
+/*RPM */
+#define EAPI_ID_HWMON_FAN_SYSTEM				EAPI_UINT32_C(0x22001)
+/*RPM */
+#define EAPI_SEMA_ID_HWMON_VOLTAGE_GFX_VCORE	EAPI_UINT32_C(0x22002)
+#define EAPI_SEMA_ID_HWMON_VOLTAGE_1V05			EAPI_UINT32_C(0x22003)
+#define EAPI_SEMA_ID_HWMON_VOLTAGE_1V5			EAPI_UINT32_C(0x22004)
+#define EAPI_SEMA_ID_HWMON_VOLTAGE_VIN			EAPI_UINT32_C(0x22005)
+#define EAPI_SEMA_ID_HWMON_FAN_SYSTEM_2			EAPI_UINT32_C(0x22006)
+#define EAPI_SEMA_ID_HWMON_FAN_SYSTEM_3			EAPI_UINT32_C(0x22007)
+
+
+
+
 
 /* Description
  *   The amount of available data exceeds the buffer size.
@@ -105,6 +240,10 @@
 #define EAPI_BACKLIGHT_SET_DIMEST     EAPI_UINT32_C(0)
 #define EAPI_BACKLIGHT_SET_BRIGHTEST  EAPI_UINT32_C(255)
 
+/* Temperature Macros */
+#define EAPI_KELVINS_OFFSET 2731
+#define EAPI_ENCODE_CELCIUS(Celsius) EAPI_UINT32_C((((Celsius)*10))+EAPI_KELVINS_OFFSET) //To convert Celsius to Kelvin
+#define EAPI_DECODE_CELCIUS(Celsius) ((Celsius)- EAPI_KELVINS_OFFSET)/10		  //To convert Kelvin to Celsius
 
 /**
  * @brief Function initializes the SEMA Library.
@@ -383,9 +522,6 @@ uint32_t EApiGPIOGetLevel(uint32_t Id, uint32_t Bitmask, uint32_t *pLevel);
  * @return 0 On Success, -1 On Failure.
  */
 uint32_t EApiGPIOSetLevel(uint32_t Id, uint32_t Bitmask, uint32_t Level);
-uint32_t EApiSetGpioInterrupt(uint32_t trigger);
-uint32_t EApiReadGpioInterrupt(uint32_t Id, uint32_t* value);
-uint32_t EApiClearGpioInterrupt();
 
 /*
  *

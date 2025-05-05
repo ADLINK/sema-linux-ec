@@ -79,53 +79,54 @@ uint32_t EApiBoardGetStringA(uint32_t Id, char *pBuffer, uint32_t *pBufLen)
 
 	switch (Id)
 	{
-		case 1:
+		case EAPI_ID_BOARD_MANUFACTURER_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/manufacturer_name");
 			break;
-		case 2:
+		case EAPI_ID_BOARD_NAME_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
 			break;
-		case 3:
+		case EAPI_ID_BOARD_SERIAL_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/serial_number");
 			break;
-		case 4:
+		case EAPI_ID_BOARD_BIOS_REVISION_STR:
 			sprintf(sysfile, "/sys/class/dmi/id/bios_version");
 			break;
-		case 5:
+		case EAPI_SEMA_ID_BOARD_BOOT_VERSION_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/bmc_boot_version");
 			break;
-		case 6:
+		case EAPI_SEMA_ID_BOARD_RESTART_EVENT_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/restart_event_str");
 			break;
-		case 7:
+		case EAPI_ID_BOARD_HW_REVISION_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/hw_rev");
 			break;
-		case 8:
+		case EAPI_SEMA_ID_BOARD_APPLICATION_VERSION_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/bmc_application_version");
 			break;
-		case 9:
+		case EAPI_SEMA_ID_BOARD_REPAIR_DATE_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/last_repair_date");
 			break;
-		case 10:
+		case EAPI_SEMA_ID_BOARD_MANUFACTURE_DATE_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/manufactured_date");
 			break;
-		case 11:
+		case EAPI_SEMA_ID_BOARD_MAC_1_STRING:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/mac_address_1");
 			break;
-		case 12:
+		case EAPI_SEMA_ID_BOARD_MAC_2_STRING:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/mac_address_2");
 			break;
-		case 13:
+		case EAPI_SEMA_ID_BOARD_2ND_HW_REVISION_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/second_hw_rev");
 			break;
-		case 14:
+		case EAPI_SEMA_ID_BOARD_2ND_SERIAL_STR:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/second_ser_num");
 			break;
-		case 15:
-                        sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/platform_id");
+		case EAPI_ID_BOARD_PLATFORM_TYPE_STR:
+            sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/platform_id");
 			break;
 		default:
 			status = EAPI_STATUS_UNSUPPORTED;
+			return status;
 	}
 
 	ret = read_sysfs_file(sysfile, pBuffer, *pBufLen);
@@ -167,124 +168,129 @@ uint32_t EApiBoardGetValue(uint32_t Id, uint32_t *pValue)
 
 	switch (Id)
 	{
-		case 1:
+		case EAPI_ID_GET_EAPI_SPEC_VERSION:
 			*pValue = (EAPI_VERSION);
 			return EAPI_STATUS_SUCCESS;
-		case 2:
+		case EAPI_ID_BOARD_BOOT_COUNTER_VAL:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/boot_counter_val");
 			break;
-		case 3:
+		case EAPI_ID_BOARD_RUNNING_TIME_METER_VAL:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/total_up_time");
 			break;
-		case 4:
-			*pValue = EAPI_VER_CREATE(4,0,0);
+		case EAPI_ID_BOARD_LIB_VERSION_VAL:
+			*pValue = SEMA_LIB_VERSION;
 			return EAPI_STATUS_SUCCESS;
-		case 5:
+		case EAPI_ID_HWMON_CPU_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_cur_temp",hwmon_number);
 			ret = IsFileExist(sysfile);
 			if (ret){
 				sprintf(sysfile, "/sys/class/thermal/thermal_zone1/temp");
 			}
-		
 			break;
-		case 6:
+		case EAPI_ID_HWMON_SYSTEM_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_cur_temp",hwmon_number);
 			break;
-		case 7:
+		case EAPI_ID_HWMON_VOLTAGE_VCORE:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_vcore");
 			break;
-		case 8:
+		case EAPI_ID_HWMON_VOLTAGE_2V5:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_2v5");
 			break;
-		case 9:
+		case EAPI_ID_HWMON_VOLTAGE_3V3:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_3v3");
 			break;
-		case 10:
+		case EAPI_ID_HWMON_VOLTAGE_VBAT:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_vbat");
 			break;
-		case 11:
+		case EAPI_ID_HWMON_VOLTAGE_5V:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_5v");
 			break;
-		case 12:
+		case EAPI_ID_HWMON_VOLTAGE_5VSB:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_5vsb");
 			break;
-		case 13:
+		case EAPI_ID_HWMON_VOLTAGE_12V:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_12v");
 			break;
-		case 14:
+		case EAPI_ID_HWMON_FAN_CPU:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_fan_speed", hwmon_number);
 			break;
-		case 15:
+		case EAPI_ID_HWMON_FAN_SYSTEM:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_fan_speed", hwmon_number);
 			break;
-		case 16:
+		case EAPI_SEMA_ID_BOARD_POWER_UP_TIME:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/power_up_time");
 			break;
-		case 17:
+		case EAPI_SEMA_ID_BOARD_RESTART_EVENT:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/restart_event");
 			break;
-		case 18:
+		case EAPI_SEMA_ID_BOARD_CAPABILITIES:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/capabilities");
 			break;
-		case 19:
+		case EAPI_SEMA_ID_BOARD_CAPABILITIES_EX:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/capabilities_ext");
 			break;
-		case 20:
+		case EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_min_temp", hwmon_number);
 			break;
-		case 21:
+		case EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_max_temp", hwmon_number);
 			break;
-		case 22:
+		case EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_startup_temp", hwmon_number);
 			break;
-		case 23:
+		case EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_min_temp",hwmon_number);
 			break;
-		case 24:
+		case EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_max_temp",hwmon_number);
 			break;
-		case 25:
+		case EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_startup_temp", hwmon_number);
 			break;
-		case 26:
+		case EAPI_SEMA_ID_BOARD_MAIN_CURRENT:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/main_current");
 			break;
-		case 27:
+		case EAPI_SEMA_ID_HWMON_VOLTAGE_GFX_VCORE:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_gfx_vcore");
 			break;
-		case 28:
+		case EAPI_SEMA_ID_HWMON_VOLTAGE_1V05:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_1v05");
 			break;
-		case 29:
+		case EAPI_SEMA_ID_HWMON_VOLTAGE_1V5:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_1v5");
 			break;
-		case 30:
+		case EAPI_SEMA_ID_HWMON_VOLTAGE_VIN:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_vin");
 			break;
-		case 31:
+		case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_2:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys2_fan_speed");
 			break;
-		case 32:
+		case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_3:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys3_fan_speed");
 			break;
-		case 33:
+		case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys2_cur_temp");
 			break;
-		case 34:
+		case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MIN_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys2_min_temp");
 			break;
-		case 35:
+		case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MAX_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys2_max_temp");
 			break;
-		case 36:
+		case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_STARTUP_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon2/device/sys2_startup_temp");
 			break;
-		case 37:
+		case EAPI_SEMA_ID_BOARD_POWER_CYCLE:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/power_cycles");
 			break;
-		case 38:
+		case EAPI_SEMA_ID_BOARD_BMC_FLAG:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/bmc_flags");
+			break;
+		case EAPI_SEMA_ID_BOARD_BMC_STATUS:
+			status = EAPI_STATUS_UNSUPPORTED;
+			return status;
+		case EAPI_SEMA_ID_IO_CURRENT:
+			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/main_current");
 			break;
 		
 		default:

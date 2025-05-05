@@ -26,7 +26,7 @@
 #include <eapi.h>
 #include <uuid/uuid.h>
 
-#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_6_25_03_18"
+#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_7_25_05_05"
 
 char*			ExeName;
 uint8_t	SetWatchdog, TriggerWatchdog, StopWatchdog, WatchDogCap,IsPwrUpWDogStart, IsPwrUpWDogStop;
@@ -35,7 +35,7 @@ uint8_t	SmartFanTempSet, SmartFanTempGet, SmartFanTempSetSrc, SmartFanTempGetSrc
 uint8_t	SmartFanModeGet, SmartFanModeSet, SmartFanPWMGet;
 uint8_t	GetStringA, GetValue, GetVoltageMonitor,GetVoltageMonitorCap, GetSEMAVersion;
 uint8_t	VgaGetBacklightEnable, VgaSetBacklightEnable, VgaGetBacklightBrightness, VgaSetBacklightBrightness;
-uint8_t	GPIOGetDirectionCaps, GPIOGetDirection, GPIOSetDirection, GPIOGetLevel, GPIOSetLevel, GPIOEnableInterrupt, GPIOGetInterrupt, GPIOClearInterrupt;
+uint8_t	GPIOGetDirectionCaps, GPIOGetDirection, GPIOSetDirection, GPIOGetLevel, GPIOSetLevel;
 uint8_t GetErrorLog, GetErrorNumberDescription, GetCurrentPosErrorLog, GetExceptionDescription;
 uint8_t IsI2CCap, IsI2CProb, IsI2CWrRaw, IsI2CReRaw, IsI2CReXf, IsI2CWrXf, IsI2CSts;
 uint8_t SetBiosSource, GetBiosSource,GetBiosStatus, srcdata;
@@ -51,6 +51,71 @@ struct {
 	uint32_t nByteCnt;
 	uint32_t WByteCnt;
 }I2CFuncArgs;
+
+
+unsigned int GetValuesMap[41] =
+{ 0,
+	EAPI_ID_GET_EAPI_SPEC_VERSION,
+	EAPI_ID_BOARD_BOOT_COUNTER_VAL,
+	EAPI_ID_BOARD_RUNNING_TIME_METER_VAL,
+	EAPI_ID_BOARD_LIB_VERSION_VAL,
+	EAPI_ID_HWMON_CPU_TEMP,
+	EAPI_ID_HWMON_SYSTEM_TEMP,
+	EAPI_ID_HWMON_VOLTAGE_VCORE,
+	EAPI_ID_HWMON_VOLTAGE_2V5,
+	EAPI_ID_HWMON_VOLTAGE_3V3,
+	EAPI_ID_HWMON_VOLTAGE_VBAT,
+	EAPI_ID_HWMON_VOLTAGE_5V,
+	EAPI_ID_HWMON_VOLTAGE_5VSB,
+	EAPI_ID_HWMON_VOLTAGE_12V,
+	EAPI_ID_HWMON_FAN_CPU,
+	EAPI_ID_HWMON_FAN_SYSTEM,
+	EAPI_SEMA_ID_BOARD_POWER_UP_TIME,
+	EAPI_SEMA_ID_BOARD_RESTART_EVENT,
+	EAPI_SEMA_ID_BOARD_CAPABILITIES,
+	EAPI_SEMA_ID_BOARD_CAPABILITIES_EX,
+	EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP,
+	EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP,
+	EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP,
+	EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP,
+	EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP,
+	EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP,
+	EAPI_SEMA_ID_BOARD_MAIN_CURRENT,
+	EAPI_SEMA_ID_HWMON_VOLTAGE_GFX_VCORE,
+	EAPI_SEMA_ID_HWMON_VOLTAGE_1V05,
+	EAPI_SEMA_ID_HWMON_VOLTAGE_1V5,
+	EAPI_SEMA_ID_HWMON_VOLTAGE_VIN,
+	EAPI_SEMA_ID_HWMON_FAN_SYSTEM_2,
+	EAPI_SEMA_ID_HWMON_FAN_SYSTEM_3,
+	EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP,
+	EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MIN_TEMP,
+	EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MAX_TEMP,
+	EAPI_SEMA_ID_BOARD_2ND_SYSTEM_STARTUP_TEMP,
+	EAPI_SEMA_ID_BOARD_POWER_CYCLE,
+	EAPI_SEMA_ID_BOARD_BMC_FLAG,
+	EAPI_SEMA_ID_BOARD_BMC_STATUS,
+	EAPI_SEMA_ID_IO_CURRENT
+};
+
+unsigned GetStringMap[17] = {
+	0,
+	EAPI_ID_BOARD_MANUFACTURER_STR,
+	EAPI_ID_BOARD_NAME_STR,
+	EAPI_ID_BOARD_SERIAL_STR,
+	EAPI_ID_BOARD_BIOS_REVISION_STR,
+	EAPI_ID_BOARD_HW_REVISION_STR,
+	EAPI_ID_BOARD_PLATFORM_TYPE_STR,
+	EAPI_SEMA_ID_BOARD_BOOT_VERSION_STR,		
+	EAPI_SEMA_ID_BOARD_APPLICATION_VERSION_STR,
+	EAPI_SEMA_ID_BOARD_RESTART_EVENT_STR,
+	EAPI_SEMA_ID_BOARD_REPAIR_DATE_STR,
+	EAPI_SEMA_ID_BOARD_MANUFACTURE_DATE_STR,
+	EAPI_SEMA_ID_BOARD_MAC_1_STRING,
+	EAPI_SEMA_ID_BOARD_MAC_2_STRING,
+	EAPI_SEMA_ID_BOARD_2ND_HW_REVISION_STR,
+	EAPI_SEMA_ID_BOARD_2ND_SERIAL_STR,
+};
+
 unsigned int string_to_hex(char *string)
 {
 	int data = 0;
@@ -119,7 +184,7 @@ void ShowHelp(int condition)
 		printf("     7.MAC Id\n");
 		printf("     8.MAC Id 2\n\n");
 
-		printf("     Example: semautil /s write 1020 Aaaa 4\n          It will be written to 1020, 1021, 1022, 1023\n\n");
+		printf("     Example: semautil /s write 1 1020 Aaaa\n          It will be written to 1020, 1021, 1022, 1023\n\n");
 		//printf("\n     Note: Hexa decimal values are not valid\n     Note: Locking of ODM region will only make ODM is read-only.\n          lock function will not protect User region.\n          read and write function will not work on ODM region\n");
 		printf("     Note : Unlock the ODM region to perform odm_write operation\n            hex_write operation should be provided as below\n	Example: semautil /s hex_write 1 128 aa bb c d \n");
 	}
@@ -141,22 +206,24 @@ void ShowHelp(int condition)
 	}
 	if (condition == 4 || condition == 0)
 	{
-		printf("- System monitor-Board Info:\n");
+		printf("\n- System monitor-Board Info:\n");
 		printf("  1. semautil /i get_bd_info [EAPI ID] \n");
 		printf("       1  : Board manufacturer name \n");
 		printf("       2  : Board name \n");
 		printf("       3  : Board serial number\n");
 		printf("       4  : Board BIOS revision\n");
-		printf("       5  : Board bootloader revision\n");
-		printf("       6  : Board restart event\n");
-		printf("       7  : Board HW revision \n");
-		printf("       8  : Board application revision\n");
-		printf("       9  : Board repair date\n");
-		printf("       10 : Board manufacturer date\n");
-		printf("       11 : Board MAC address 1\n");
-		printf("       12 : Board MAC address 2\n");
-		printf("       13 : Board 2nd HW revision number\n");
-		printf("       14 : Board 2nd serial\n\n");
+		printf("       5  : HW revision \n");
+		printf("       6  : Board platform type\n");
+		printf("       7  : BMC Bootloader revision\n");
+		printf("       8  : BMC application revision\n");
+		printf("       9  : Board restart event\n");
+		printf("       10 : Board repair date\n");
+		printf("       11 : Board manufacturer date\n");
+		printf("       12 : Board MAC address 1\n");
+		printf("       13 : Board MAC address 2\n");
+		printf("       14 : Board 2nd HW revision number\n");
+		printf("       15 : Board 2nd serial\n");
+
 	}
 	if (condition == 5 || condition == 0)
 	{
@@ -185,15 +252,8 @@ void ShowHelp(int condition)
 		printf("  3. semautil /g set_direction       [GPIO Bit] [0 - Output or 1 - Input]\n");
 		printf("  4. semautil /g get_level           [GPIO Bit]\n");
 		printf("  5. semautil /g set_level           [GPIO Bit] [0 - Low or 1 - High]\n");
-		printf("  6. semautil /g gpio_interrupt	     [TRIGGER ID]\n");
-		printf("  7. semautil /g gpio_interrupt_read [GPIO Bit]\n");
-		printf("  8. semautil /g gpio_interrupt_clear \n\n");
 		printf("       GPIO set/write parameters:\n");
 		printf("       GPIO Bit  1-16 \n");
-		printf("       Trigger ID:\n");
-		printf("       1 - Edge trigger\n");
-		printf("       2 - Low trigger\n");
-		printf("       3 - High trigger\n");
 		printf("       Note: GPIO access may not be available on all platforms\n\n");
 	}
 	if (condition == 9 || condition == 0)
@@ -282,40 +342,41 @@ void ShowHelp(int condition)
 	}
 
 	if (condition == 12 || condition == 0)
-    {
-        printf("\n- Get BIOS Source:\n");
-        printf("  1. semautil /src  get_src\n");
-        printf("  2. semautil /src  set_src value[0-3]\n");
+	{
+		printf("\n- Get BIOS Source:\n");
+		printf("  1. semautil /src  get_src\n");
+		printf("  2. semautil /src  set_src value[0-3]\n");
 		printf("  3. semautil /src get_bios_status\n");
-        printf("  \n	Value   :\n");
-        printf("	 0      -   By hardware configuration of currently selected BIOS\n");
-        printf("	 1      -   Switch to Fail-Safe BIOS\n");
-        printf("	 2      -   Switch to External BIOS (SPI0 on carrier)\n");
-        printf("	 3      -   Switch to Internal BIOS (SPI0 on module)\n");
+		printf("  \n	Value   :\n");
+		printf("	 0      -   By hardware configuration of currently selected BIOS\n");
+		printf("	 1      -   Switch to Fail-Safe BIOS\n");
+		printf("	 2      -   Switch to External BIOS (SPI0 on carrier)\n");
+		printf("	 3      -   Switch to Internal BIOS (SPI0 on module)\n");
 
 		printf("\n");
 		printf("  BIOS select status information.\n");
 		printf("	Bit2 Bit1 Bit0\n");
-        printf("	 0    0    0  -   Module SPI0/ Carrier SPI1 (Standard BIOS)\n");
-        printf("	 0    0    1  -   Carrier SPI0/ Module SPI1 (Fail - Safe BIOS)\n");
-        printf("	 0    1    0  -   Unknown\n");
-        printf("	 0    1    1  -   Module SPI0/Module SPI1 (Standard BIOS)\n");
+		printf("	 0    0    0  -   Module SPI0/ Carrier SPI1 (Standard BIOS)\n");
+		printf("	 0    0    1  -   Carrier SPI0/ Module SPI1 (Fail - Safe BIOS)\n");
+		printf("	 0    1    0  -   Unknown\n");
+		printf("	 0    1    1  -   Module SPI0/Module SPI1 (Standard BIOS)\n");
 		printf("	 1    0    0  -   Unknown\n");
-        printf("	 1    0    1  -   Switch to Fail-Safe BIOS\n");
-        printf("	 1    1    0  -   Switch to External BIOS\n");
-        printf("	 1    1    1  -   Switch to Internal BIOS \n\n");
+		printf("	 1    0    1  -   Switch to Fail-Safe BIOS\n");
+		printf("	 1    1    0  -   Switch to External BIOS\n");
+		printf("	 1    1    1  -   Switch to Internal BIOS \n\n");
 		printf("  If Bit 2 is OFF : PICMG BIOS selected\n");
 		printf("  If Bit 2 is ON : Dual BIOS selected\n");
-	
-        }
+
+	}
 	if (condition == 13 || condition == 0)
 	{
 		printf("- UUID :\n");
 		printf("  1. semautil /c guid_generate_write\n");
 		printf("  2. semautil /c guid_read\n");	
 	}
-	 
+
 }
+
 int DispatchCMDToSEMA(int argc,char *argv[])
 {
 	int ret  = 0;
@@ -349,6 +410,21 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 	unsigned char memcap[4096];
 	uint32_t Storagesize = 0, BlockLength = 0;
 
+	char* FormatNumber(uint32_t number) {
+
+		char buffer[9];
+		char* result = (char*)malloc(9 * sizeof(char)); // Allocate memory for result
+
+		snprintf(buffer, sizeof(buffer), "%08X", number);
+
+		char part1[2] = { buffer[1], '\0' };
+		char part2[2] = { buffer[3], '\0' };
+		char part3[3] = { buffer[6], buffer[7], '\0' };
+
+		snprintf(result, 9, "%s.%s.%s", part1, part2, part3);
+
+		return result;	
+	}
 	// Library Initializing
 	ret = EApiLibInitialize();
 	if (ret){
@@ -430,21 +506,368 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			exit(-1);
 		}
 		Id = atoi(argv[3]);
+		if(Id>40 || Id<1){
+			printf("Wrong arguments GetValue\n");
+			exit(-1);
+		}
+		Id = GetValuesMap[Id];
+
 		ret = EApiBoardGetValue(Id, &Value);
-		if (ret){
-				
-		if(ret==EAPI_STATUS_UNSUPPORTED){
+		if (ret)
+		{
+			if(ret==EAPI_STATUS_UNSUPPORTED)
+			{
 				printf("Failed : Unsupported function.\n");
 				return 0;				
-	        }
-		else
+			}
+			else
 			{
-			printf("Get EApi information failed\n");
-			errno_exit("EApiBoardGetValue");
+				printf("Get EApi information failed\n");
+				errno_exit("EApiBoardGetValue");
 			}
 		}
-		
-		printf("%d\n",Value);
+
+		char* BoardCapabilities[32] = { "Uptime and Power Cycles", "System Restart Event", "User-Flash Size", "Runtime Watchdog", "Temperatures", "Voltage Monitor", "Storage of failure reason", "Bootloader timeout", "Display Backlight control", "Power-up Watchdog", "Power Monitor (current sense)", "Boot counter", "Input Voltage",NULL, "Rsense of Power Monitor", "Dual-BIOS", "I2C Bus 1", "I2C Bus 2", "CPU Fan", "System Fan 1", "AT/ATX Mode", "ACPI Thermal Trigger", "Power-up to last state", "Backlight Restore", "DTS Temperature", "DTS Offset Registers", "System Fan 2", "System Fan 3", "Ext-GPIO", "I2C Bus 3", "I2C Bus 4", "BMC ID 0" };
+		char* values[32] = {};
+		values[13] = NULL;
+		char* BoardExCapabilities[15] = { "Board 2 Temperature", "PEC Protocol", NULL, "Error log", "1-Wire Bus", "Wake by EC", "GPIO Alternate Function", "Soft Fan", "Parameter Memory", "Extended I2C registers for Status", "Ext-GPIO Input Interrupt", "Hardware Monitor Input String", "Ext-GPIO Pins Count", "Power-up/Runtime Watchdog support action setting", "Switch BIOS immediately" };
+		char* Extvalues[15] = {};
+		Extvalues[2] = NULL;
+		char* BoardBMCFlag[3] = { "Exception code", "Mode", "BIOS" };
+		char* formattedNum;
+		int i;
+		switch(Id){
+			case EAPI_ID_GET_EAPI_SPEC_VERSION:
+				formattedNum = FormatNumber(Value);
+				printf("\nEAPI Specification Version: %s\n\n", formattedNum);
+				break;
+			case EAPI_ID_BOARD_BOOT_COUNTER_VAL:
+				printf("\nBoot counter: %d\n\n", Value);
+				break;
+			case EAPI_ID_BOARD_RUNNING_TIME_METER_VAL:
+				printf("\nRunning Time Meter: %d minutes\n\n", Value);
+				break;
+			case EAPI_ID_BOARD_LIB_VERSION_VAL:
+				formattedNum = FormatNumber(Value);
+				printf("\nSEMA Library Version : %s\n\n", formattedNum);
+				break;
+			case EAPI_ID_HWMON_CPU_TEMP:
+				printf("\nCPU temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_ID_HWMON_SYSTEM_TEMP:
+				printf("\nSystem Temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_VCORE:
+				printf("\nCPU Core Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_2V5:
+				printf("\n2.5V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_3V3:
+				printf("\n3.3V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_VBAT:
+				printf("\nBattery Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_5V:
+				printf("\n5V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_5VSB:
+				printf("\n5V Standby Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_VOLTAGE_12V:
+				printf("\n12V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_FAN_CPU:
+				printf("\nCPU Fan speed: %d RPM\n\n", Value);
+				break;
+			case EAPI_ID_HWMON_FAN_SYSTEM:
+				printf("\nSystem Fan 1 speed: %d RPM\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_BOARD_POWER_UP_TIME:
+				printf("\nBoard powerup time: %d seconds\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_BOARD_RESTART_EVENT:
+				printf("\nRestart event: 0x%X\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_BOARD_CAPABILITIES:
+				printf("\nBMC capabilities:\n");
+				for (i = 0; i < (sizeof(BoardCapabilities) / sizeof(*BoardCapabilities)); i++) {
+					if (i == 2) {
+						if ((Value & (1 << i)) != 0) {
+							values[i] = " : 1024 bytes (0x0000 to 0x03FF)";
+						}
+						else {
+							values[i] = " : 512 bytes";
+						}
+					}
+					else if ((i == 12)) {
+						values[i] = " : Not Supported";
+						i++;
+					}
+					else if (i == 14) {
+						values[i] = " : Not Supported";
+					}
+					else if (i == 31)
+					{
+						if ((Value & (1 << i)) != 0)
+						{
+							values[i] = " : Tiva BMC";
+						}
+						else
+						{
+							values[i] = " : Other BMC";
+						}
+					}
+					else
+					{
+						if ((Value & (1 << i)) != 0)
+						{
+							values[i] = " : Supported";
+						}
+						else
+						{
+							values[i] = " : Not Supported";
+						}
+					}
+				}
+				printf("\n%-*s%-*s%-*s\t\t%-*s%-*s%-*s", 10, "Bit", 30, "Capability", 30, " Status", 10, "Bit", 30, "Capability", 30, " Status");
+				printf("\n");
+				for (i = 0; i < 16; i++) {
+					if (i == 12) {
+						printf("\n%d&%-*d%-*s%-*s\t\t%-*d%-*s%-*s", i, 5, i + 1, 30, BoardCapabilities[i], 30, values[i], 8, i + 16, 30, BoardCapabilities[i + 16], 30, values[i + 16]);
+					}
+					else if (i == 13) {
+						printf("\n%65s\t\t%-*d%-*s%-*s", "", 8, i + 16, 30, BoardCapabilities[i + 16], 30, values[i + 16]);
+					}
+					else {
+						printf("\n%-*d%-*s%-*s\t\t%-*d%-*s%-*s", 8, i, 30, BoardCapabilities[i], 30, values[i], 8, i + 16, 30, BoardCapabilities[i + 16], 30, values[i + 16]);
+					}
+				}
+				printf("\n");
+				break;
+			case EAPI_SEMA_ID_BOARD_CAPABILITIES_EX:
+				printf("\nExtended BMC capabilities:\n");
+				for (i = 0; i < (sizeof(BoardExCapabilities) / sizeof(*BoardExCapabilities)); i++) {
+
+					if (i != 2)
+					{
+						if (i == 12)
+						{
+							if ((Value & (1 << i)) != 0)
+							{
+								Extvalues[i] = " : 12 Pins";
+							}
+							else
+							{
+								Extvalues[i] = " : 8 Pins";
+							}
+						}
+						else
+						{
+							if ((Value & (1 << i)) != 0)
+							{
+								Extvalues[i] = " : Supported";
+							}
+							else
+							{
+								Extvalues[i] = " : Not Supported";
+							}
+						}
+					}
+				}
+				printf("\n%-*s%-*s%-*s\t\t%-*s%-*s%-*s", 10, "Bit", 30, "Capability", 30, " Status", 10, "Bit", 30, "Capability", 30, " Status");
+				printf("\n");
+				for (i = 0; i < 8; i++) {
+					if (i == 7) {
+						printf("\n%-*d%-*s%-*s", 8, i + 32, 30, BoardExCapabilities[i], 30, Extvalues[i]);
+					}
+					else if (i != 2) {
+						printf("\n%-*d%-*s%-*s\t\t%-*d%-*s%-*s", 8, i + 32, 30, BoardExCapabilities[i], 30, Extvalues[i], 8, i + 32 + 8, 30, BoardExCapabilities[i + 8], 30, Extvalues[i + 8]);
+					}
+					else {
+						printf("\n%65s\t\t%-*d%-*s%-*s", "", 8, i + 32 + 8, 30, BoardExCapabilities[i + 8], 30, Extvalues[i + 8]);
+					}
+				}
+				printf("\n\n");
+				break;
+			case EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP:
+				printf("\nBoard minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP:
+				printf("\nBoard maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP:
+				printf("\nBoard startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP:
+				printf("\nCPU minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP:
+				printf("\nCPU maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP:
+				printf("\nCPU startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_MAIN_CURRENT:
+				printf("\nMain power current: %d mA\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_VOLTAGE_GFX_VCORE:
+				printf("\nGFX Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_VOLTAGE_1V05:
+				printf("\n1.05V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_VOLTAGE_1V5:
+				printf("\n1.5V Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_VOLTAGE_VIN:
+				printf("\nVin Voltage: %d mV\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_2:
+				printf("\nSystem Fan 2 speed: %d RPM\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_3:
+				printf("\nSystem Fan 3 speed: %d RPM\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP:
+				printf("\nBoard 2nd Current temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MIN_TEMP:
+				printf("\nBoard 2nd minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MAX_TEMP:
+				printf("\nBoard 2nd maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_STARTUP_TEMP:
+				printf("\nBoard 2nd startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				break;
+			case EAPI_SEMA_ID_BOARD_POWER_CYCLE:
+				printf("\nPower cycle counter: %d\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_BOARD_BMC_FLAG:
+				printf("\nBMC Flag:");
+				for (i = 0; i < (sizeof(BoardBMCFlag) / sizeof(*BoardBMCFlag)); i++) 
+				{
+					if (i == 0)
+					{
+						uint32_t deciVal = Value & 0x11111;
+						char* opstring;
+						switch (deciVal)
+						{
+							case 0:
+								opstring = "NO ERROR";
+								break;
+							case 2:
+								opstring = "NO_SUSCLK";
+								break;
+							case 3:
+								opstring = "NO_SLP_S5";
+								break;
+							case 4:
+								opstring = "NO_SLP_S4";
+								break;
+							case 5:
+								opstring = "NO_SLP_S3";
+								break;
+							case 6:
+								opstring = "BIOS_FAIL";
+								break;
+							case 7:
+								opstring = "RESET_FAIL";
+								break;
+							case 8:
+								opstring = "RESETIN_FAIL";
+								break;
+							case 9:
+								opstring = "NO_CB_PWORK";
+								break;
+							case 10:
+								opstring = "CRITICAL_TEMP";
+								break;
+							case 11:
+								opstring = "POWER_FAIL";
+								break;
+							case 12:
+								opstring = "VOLTAGE_FAIL";
+								break;
+							case 13:
+								opstring = "RSMRST_FAIL";
+								break;
+							case 14:
+								opstring = "NO_VDDQ_PG";
+								break;
+							case 15:
+								opstring = "NO_V1P05A_PG";
+								break;
+							case 16:
+								opstring = "NO_VCORE_PG";
+								break;
+							case 17:
+								opstring = "NO_SYS_GD";
+								break;
+							case 18:
+								opstring = "NO_V5SBY";
+								break;
+							case 19:
+								opstring = "NO_V3P3A";
+								break;
+							case 20:
+								opstring = "NO_V5_DUAL";
+								break;
+							case 21:
+								opstring = "NO_PWRSRC_GD";
+								break;
+							case 22:
+								opstring = "NO_P_5V_3V3_S0_PG";
+								break;
+							case 23:
+								opstring = "NO_SAME_CHANNEL";
+								break;
+							case 24:
+								opstring = "NO_PCH_PG";
+								break;
+							default:
+								opstring = "";
+								break;
+						}
+						printf("\n%s : %s\n", BoardBMCFlag[i], opstring);
+
+					}
+					else if (i == 1)
+					{
+						if ((Value & (1 << 6)) != 0)
+						{
+							printf("\n%s : ATX Mode\n", BoardBMCFlag[i]);
+						}
+						else
+						{
+							printf("\n%s : AT Mode\n", BoardBMCFlag[i]);
+						}
+					}
+					else
+					{
+						if ((Value & (1 << 7)) != 0)
+						{
+							printf("\n%s : Fail-Safe BIOS is active\n", BoardBMCFlag[i]);
+						}
+						else
+						{
+							printf("\n%s : Standard BIOS\n", BoardBMCFlag[i]);
+						}
+					}
+				}
+				break;
+			case EAPI_SEMA_ID_BOARD_BMC_STATUS:
+				printf("\nBoard BMC Status: 0x%X\n\n", Value);
+				break;
+			case EAPI_SEMA_ID_IO_CURRENT:
+				printf("\nIO Current: %d mA\n\n",Value);
+				break;
+			default:
+				printf("\n%d\n\n",Value);
+				break;
+		}
 	}
 	if (GetStringA)
 	{
@@ -453,6 +876,11 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			exit(-1);
 		}
 		Id = atoi(argv[3]);
+		if(Id>15 || Id<1){
+			printf("Wrong arguments GetStringA\n");
+			exit(-1);
+		}
+		Id = GetStringMap[Id];
 		Size = sizeof(BoardInfo);
 		ret = EApiBoardGetStringA(Id, BoardInfo, &Size);
 		if (ret) {
@@ -462,7 +890,57 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("Get EApi information failed\n");
 			errno_exit("EApiBoardGetStringA");
 		}
-		printf("\n%s\n", BoardInfo);
+
+		switch(Id){
+			case EAPI_ID_BOARD_MANUFACTURER_STR:
+				printf("\nBoard manufacturer name: %s\n", BoardInfo);
+				break;
+			case EAPI_ID_BOARD_NAME_STR:
+				printf("\nBoard name: %s\n", BoardInfo);
+				break;
+			case EAPI_ID_BOARD_SERIAL_STR:
+				printf("\nBoard serial number: %s\n", BoardInfo);
+				break;
+			case EAPI_ID_BOARD_BIOS_REVISION_STR:
+				printf("\nBoard BIOS revision: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_BOOT_VERSION_STR:
+				printf("\nBoard bootloader revision: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_RESTART_EVENT_STR:
+				printf("\nBoard restart event: %s\n", BoardInfo);
+				break;
+			case EAPI_ID_BOARD_HW_REVISION_STR:
+				printf("\nBoard HW revision: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_APPLICATION_VERSION_STR:
+				printf("\nBoard application revision: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_REPAIR_DATE_STR:
+				printf("\nBoard repair date: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_MANUFACTURE_DATE_STR:
+				printf("\nBoard manufacturer date: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_MAC_1_STRING:
+				printf("\nBoard MAC address 1: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_MAC_2_STRING:
+				printf("\nBoard MAC address 2: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_HW_REVISION_STR:
+				printf("\nBoard 2nd HW revision number: %s\n", BoardInfo);
+				break;
+			case EAPI_SEMA_ID_BOARD_2ND_SERIAL_STR:
+				printf("\nBoard 2nd serial number: %s\n", BoardInfo);
+				break;
+			case EAPI_ID_BOARD_PLATFORM_TYPE_STR:
+				printf("\nBoard platform type: %s\n", BoardInfo);
+				break;
+			default:
+				printf("\n%s\n", BoardInfo);
+				break;
+		}
 	}
 	if (WatchDogCap)
 	{
@@ -472,7 +950,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Get EAPI information failed\n");
 			errno_exit("EApiWDogGetCap");
 		}
-		printf("MaxEventTimeout : %u\nMaxDelay : %u\nMaxResetValue : %u\n",MaxEventTimeout,MaxDelay,MaxResetTimeout);
+		printf("MaxEventTimeout : %u seconds\nMaxDelay : %u seconds\nMaxResetValue : %u seconds\n",MaxEventTimeout,MaxDelay,MaxResetTimeout);
 	}
 	if (SetWatchdog)
 	{
@@ -645,7 +1123,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		}
 		printf("FAN mode set successfully\n");
 	}
-	
+
 	if (SmartFanModeGet)
 	{
 		if (argc != 4) {
@@ -747,7 +1225,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Get EApi information failed\n");
 			errno_exit("EApiStorageCap");
 		}
-		printf("Storage Size: %u\nBlock Size: %u\n", Storagesize, BlockLength);
+		printf("Storage Size: %u bytes\nBlock Size: %u bytes\n", Storagesize, BlockLength);
 	}
 
 
@@ -798,7 +1276,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		}
 		printf("Data Written Successfully\n");
 	}
-	
+
 	if(StorageHexWrite)
 	{
 		if(argc != 6){
@@ -810,54 +1288,54 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		}
 		char hex_buf[2048];
 		int i,j=0;
-		
+
 		for(i=5;i<argc;i++)
-        {
+		{
 			if(strlen(argv[i])==1)
 			{
-			    hex_buf[j] = '0';
-			    j++;
-		       	hex_buf[j] = argv[i][0];	       
+				hex_buf[j] = '0';
+				j++;
+				hex_buf[j] = argv[i][0];	       
 			}
 			else
 			{
-                strcpy(hex_buf + j,argv[i]);
+				strcpy(hex_buf + j,argv[i]);
 			}
-            j = strlen (argv[i]) + j;
+			j = strlen (argv[i]) + j;
 		}
-        Id = atoi(argv[3]);
-        Offset = string_to_hex(argv[4]);
-	Buffer = hex_buf;
-        ByteCnt = strlen(Buffer);
-	ret = EApiStorageHexWrite(Id, Offset, Buffer, ByteCnt/2);
-        if (ret) {
-            printf("Get EApi information failed\n");
-            errno_exit("EApiStorageHexWrite");
-        }
-        printf("%d Bytes Written Successfully\n",ByteCnt/2);
+		Id = atoi(argv[3]);
+		Offset = atoi(argv[4]);
+		Buffer = hex_buf;
+		ByteCnt = strlen(Buffer);
+		ret = EApiStorageHexWrite(Id, Offset, Buffer, ByteCnt/2);
+		if (ret) {
+			printf("Get EApi information failed\n");
+			errno_exit("EApiStorageHexWrite");
+		}
+		printf("%d Bytes Written Successfully\n",ByteCnt/2);
 	}
-	
+
 	if(StorgeHexRead)
 	{
-        if (argc != 6) {
-            printf("Wrong arguments\n");
-            exit(-1);
-        }
-        memset(memcap, 0, sizeof(memcap));
-        Id= atoi(argv[3]);
-        Offset = atoi(argv[4]);
-        ByteCnt = atoi(argv[5]);
-        BufLen = sizeof(memcap);
+		if (argc != 6) {
+			printf("Wrong arguments\n");
+			exit(-1);
+		}
+		memset(memcap, 0, sizeof(memcap));
+		Id= atoi(argv[3]);
+		Offset = atoi(argv[4]);
+		ByteCnt = atoi(argv[5]);
+		BufLen = sizeof(memcap);
 
-        ret = EApiStorageHexRead(Id, Offset, memcap, BufLen, ByteCnt);
-        if (ret) {
-            printf("Get EApi information failed\n");
-            errno_exit("EApiStorageHexRead");
-        }
+		ret = EApiStorageHexRead(Id, Offset, memcap, BufLen, ByteCnt);
+		if (ret) {
+			printf("Get EApi information failed\n");
+			errno_exit("EApiStorageHexRead");
+		}
 		printf("Read Buffer : ");
 		for(int i=0;i<ByteCnt;i++)
 		{
-                	printf("0x%02X ", memcap[i]);
+			printf("0x%02X ", memcap[i]);
 		}
 		printf("\n");
 
@@ -866,7 +1344,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 	{
 		if(argc != 3){
 			printf("Wrong arguments\n");
-                        exit(-1);
+			exit(-1);
 		}
 		uuid_t uuid;
 		char* passcode;
@@ -880,17 +1358,17 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		int j=0;
 		for(int i=0; i<37;i++){
 			if(isxdigit(uuid_str[i])){
-			buffer[j]=uuid_str[i];
-			j=j+1;
+				buffer[j]=uuid_str[i];
+				j=j+1;
 			}
 		}
-	
-        Id = 3;
-        Offset = 0x100;
-        ByteCnt = strlen(buffer);
+
+		Id = 3;
+		Offset = 0x100;
+		ByteCnt = strlen(buffer);
 		permission = 2;	
 		passcode="ADEC";
-		
+
 		ret= EApiStorageUnLock(Id, permission, passcode);
 		if(ret==EAPI_STATUS_SUCCESS){
 			ret = EApiGUIDWrite(Id, Offset, buffer, ByteCnt/2);
@@ -903,29 +1381,29 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		}
 		ret = EApiStorageLock(Id);
 	}
-	
+
 	if(GUIDRead)
 	{
-        if (argc != 3) {
-            printf("Wrong arguments\n");
-            exit(-1);
-        }
-           
-        memset(memcap, 0, sizeof(memcap));
-        Id= 3;
-        Offset = 0x100;
-        ByteCnt = 16;
-        BufLen = sizeof(memcap);
+		if (argc != 3) {
+			printf("Wrong arguments\n");
+			exit(-1);
+		}
 
-        ret = EApiStorageHexRead(Id, Offset, memcap, BufLen, ByteCnt);
-        if (ret) {
-            printf("Get EApi information failed\n");
-            errno_exit("EApiStorageHexRead");
-        }
+		memset(memcap, 0, sizeof(memcap));
+		Id= 3;
+		Offset = 0x100;
+		ByteCnt = 16;
+		BufLen = sizeof(memcap);
+
+		ret = EApiStorageHexRead(Id, Offset, memcap, BufLen, ByteCnt);
+		if (ret) {
+			printf("Get EApi information failed\n");
+			errno_exit("EApiStorageHexRead");
+		}
 		printf("Read Buffer : ");
 		for(int i=0;i<ByteCnt;i++)
 		{
-            printf("0x%02X ", memcap[i]);
+			printf("0x%02X ", memcap[i]);
 		}
 		printf("\n");
 	}
@@ -939,9 +1417,9 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		ret = EApiStorageLock(Id);
 		if (!ret) {
 			if(Id==2)
-			printf("Secured region locked successfully\n");
+				printf("Secured region locked successfully\n");
 			else if(Id==3)
-			printf("ODM region locked successfully\n");
+				printf("ODM region locked successfully\n");
 		}
 		else
 		{
@@ -962,9 +1440,9 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		ret = EApiStorageUnLock(Id,permission, passcode);
 		if (!ret) {
 			if(Id==2)
-			printf("Secure region is unLocked successfully\n");
+				printf("Secure region is unLocked successfully\n");
 			else if(Id==3)
-			printf("ODM region is unLocked successfully\n");
+				printf("ODM region is unLocked successfully\n");
 		}
 		else
 		{
@@ -972,7 +1450,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			errno_exit("EApiStorageAreaUnLock");
 		}
 	}
-        if(ODM_write)
+	if(ODM_write)
 	{
 		if (argc != 5) {
 			printf("Wrong arguments\n");
@@ -982,33 +1460,33 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		ODM_Id=atoi(argv[3]);
 		switch (ODM_Id)
 		{
-		case 1:
-			Offset = 0x10;
-			break;
-		case 2:
-			Offset = 0x20;
-			break;
-		case 3:
-			Offset = 0x30;
-			break;
-		case 4:
-			Offset = 0x40;
-			break;
-		case 5:
-			Offset = 0x50;
-			break;
-		case 6:
-			Offset = 0x60;
-			break;
-		case 7:
-			Offset = 0x70;
-			break;
-		case 8:
-			Offset = 0x80;
-			break;
-		default:
-			printf("\nInvalid ODM_Id");
-			break;
+			case 1:
+				Offset = 0x10;
+				break;
+			case 2:
+				Offset = 0x20;
+				break;
+			case 3:
+				Offset = 0x30;
+				break;
+			case 4:
+				Offset = 0x40;
+				break;
+			case 5:
+				Offset = 0x50;
+				break;
+			case 6:
+				Offset = 0x60;
+				break;
+			case 7:
+				Offset = 0x70;
+				break;
+			case 8:
+				Offset = 0x80;
+				break;
+			default:
+				printf("\nInvalid ODM_Id");
+				break;
 		}
 
 		Buffer = argv[4];
@@ -1035,11 +1513,11 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		uint32_t input , output;
 		Id = atoi(argv[3]);
 		if (Id > 12 || Id == 0)
-                {
-                        printf("GPIO value should be 1-8 or 1-12\n");
-                        printf("Note: GPIO access may not be available on all platforms\n\n");
-                        return -1;
-                }
+		{
+			printf("GPIO value should be 1-8 or 1-12\n");
+			printf("Note: GPIO access may not be available on all platforms\n\n");
+			return -1;
+		}
 
 		ret = EApiGPIOGetDirectionCaps(Id, &input, &output);
 		if (ret) {
@@ -1178,103 +1656,6 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		printf("GPIO Level updated successfully\n");
 	}
 
-	if(GPIOEnableInterrupt)
-	{
-		uint32_t Id;
-		if(argc!=4)
-		{
-			printf("Wrong arguments\n");
-			exit(-1);
-		}
-		
-		Id = atoi(argv[3]);
-
-		switch(Id)
-		{
-			case 1:
-			{
-				ret = EApiSetGpioInterrupt(0x01);
-				if (ret) {
-					printf("Get EApi information failed\n");
-					errno_exit("EapiSetGpioInterrupt");
-				}
-				printf("\n Edge Trigger Interrupt is Enabled \n\n");
-			}
-			break;
-			case 2:
-			{
-				ret = EApiSetGpioInterrupt(0x04);
-				if (ret) {
-					printf("Get EApi information failed\n");
-					errno_exit("EapiSetGpioInterrupt");
-				}
-				printf("\n Low level Trigger Interrupt is Enabled \n\n");
-			}
-			break;
-			case 3:
-			{
-				ret = EApiSetGpioInterrupt(0x08);
-				if (ret) {
-					printf("Get EApi information failed\n");
-					errno_exit("EapiSetGpioInterrupt");
-				}
-				printf("\n High level Trigger Interrupt is Enabled \n\n");
-			}
-			break;
-			default:
-				printf("\n Enter the Id(1 - 3) to enable the interrupt\n\n");
-				return 0;
-			break;
-		}
-	}
-	
-	if(GPIOGetInterrupt)
-	{
-		uint32_t val,Id;
-		if(argc!=4)
-		{
-			printf("Wrong arguments\n");
-			exit(-1);
-		}
-		
-		Id = atoi(argv[3]);
-
-		if(Id < 1 || Id > 8)
-		{
-			printf("GPIO pin number should be 1-8 or 1-12\n");
-                        printf("Note: GPIO access may not be available on all platforms\n\n");
-                        return -1;
-		}
-
-		ret = EApiReadGpioInterrupt(Id - 1, &val);
-		if (ret) {
-				printf("Get EApi information failed\n");
-				errno_exit("EapiReadGpioInterrupt");
-			}
-
-		if(val != 0)
-			printf("\n Interrupt is generated for pin %d , Value : High \n", Id);
-		else
-			printf("\n Interrupt is generated for pin %d , Value : Low \n", Id);
-		
-	}
-	
-	if(GPIOClearInterrupt)
-	{
-		if(argc!=3)
-		{
-			printf("Wrong arguments\n");
-			exit(-1);
-		}
-		
-		ret = EApiClearGpioInterrupt();
-		if (ret) {
-			printf("Get EApi information failed\n");
-			errno_exit("EapiClearGpioInterrupt");
-		}
-		printf("\n Interrupt is Cleared \n\n");
-	}
-
 	if (GetErrorLog)
 	{
 		if (argc != 4) {
@@ -1289,7 +1670,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			errno_exit("EApiBoardGetErrororLog");
 		}
 		printf("ErrorNumber:    %u\nFlags:          %s\nRestartEvent:   %s\nPowerCycle:     %u\nBootCount:      %u\n",ErrorNumber, Flags, RestartEvent, PwrCycles, Bootcount);
-		printf("Time:           %u\nTotalOnTime:	%u\nBios Sel:	%x\nStatus:         %s\nCPUTemp:        %s\nBoardTemp:      %s\n",Time, TotalOnTime, BiosSel, Status, CPUtemp, Boardtemp);
+		printf("Time:           %u seconds\nTotalOnTime:	%u minutes\nBios Sel:	%x\nStatus:         %s\nCPUTemp:        %s C\nBoardTemp:      %s C\n",Time, TotalOnTime, BiosSel, Status, CPUtemp, Boardtemp);
 	}
 
 
@@ -1322,7 +1703,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			errno_exit("EApiBoardGetCurPosErrorLog");
 		}
 		printf("ErrorNumber:    %u\nFlags:          %s\nRestartEvent:   %s\nPowerCycle:     %u\nBootCount:      %u\n",ErrorNumber, Flags, RestartEvent, PwrCycles, Bootcount);
-		printf("Time:           %u\nTotalOnTime:	%u\nBIOS Sel:	%x\nStatus:         %s\nCPUTemp:        %s\nBoardTemp:      %s\n",Time, TotalOnTime, BiosSel, Status, CPUtemp, Boardtemp);
+		printf("Time:           %u seconds\nTotalOnTime:	%u minutes\nBIOS Sel:	%x\nStatus:         %s\nCPUTemp:        %s C\nBoardTemp:      %s C\n",Time, TotalOnTime, BiosSel, Status, CPUtemp, Boardtemp);
 	}
 
 	if (GetExceptionDescription)
@@ -1363,13 +1744,27 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Get EApi information failed\n");
 			errno_exit("EApiBoardGetVoltageMonitor");
 		}
+
+		if((Voltage < 2000) && (strcmp(Vmbuf, "RTC") == 0))
+		{
+			Id = EAPI_ID_BOARD_NAME_STR;
+			if(EApiBoardGetStringA(Id, BoardInfo, &Size) == EAPI_STATUS_SUCCESS)
+			{
+				if((strncmp(BoardInfo, "VPX6200",strlen("VPX6200"))) == 0)
+				{
+					printf("Voltage: Low BAT / No BAT\nDescription: %s\n", Vmbuf);
+					return 0;
+				}	
+			}
+		}
+
 		if(strstr("Current Input Current",Vmbuf) !=NULL){
 			printf("Current: %u mA\nDescription: %s\n",Voltage, Vmbuf);
 		}
 		else		
-		printf("Voltage: %u mv\nDescription: %s\n",Voltage, Vmbuf);
+			printf("Voltage: %u mv\nDescription: %s\n",Voltage, Vmbuf);
 	}
-	
+
 	if(GetVoltageMonitorCap)
 	{
 		uint32_t value=0;
@@ -1382,7 +1777,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		ret= EApiBoardGetVoltageCap(&value);
 		if(ret){
 			printf("Get EApi information failed\n");
-       	                errno_exit("EApiBoardGetVoltageCap");
+			errno_exit("EApiBoardGetVoltageCap");
 		}
 
 		if(value ==1)
@@ -1532,88 +1927,88 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		return sts;
 	}
 
-	 if(SetBiosSource)
-        {
-                 if((sts= EApiSetBiosSource(srcdata))==0)
-                 {
-                        printf("Bios boot source mode set successfully\n ");
-                 }
-                else
-                        printf("Get EApi information failed\n");
-                 return sts;
-        }
+	if(SetBiosSource)
+	{
+		if((sts= EApiSetBiosSource(srcdata))==0)
+		{
+			printf("Bios boot source mode set successfully\n ");
+		}
+		else
+			printf("Get EApi information failed\n");
+		return sts;
+	}
 
-        if(GetBiosSource)
-        {
-                if ((sts = EApiGetBiosSource(&srcdata)) ==0)
-                {
+	if(GetBiosSource)
+	{
+		if ((sts = EApiGetBiosSource(&srcdata)) ==0)
+		{
 
-                       srcdata -= '0';
-                        switch (srcdata)
-                        {
-                        case 0:
-                                printf(" 0  - By hardware configuration of currently selected BIOS\n");
-                                break;
-                        case 1:
-                                printf(" 1  - Switch to Fail - Safe BIOS\n");
-                                break;
-                        case 2:
-                                printf(" 2  - Switch to External BIOS(SPI0 on carrier)\n");
-                                break;
-                        case 3:
-                                printf(" 3  - Switch to Internal BIOS(SPI0 on module)\n");
-                                break;
-                        }
-                }
-                else
-                        printf("Get EApi information failed\n");
-                return sts;
-        }
-	
+			srcdata -= '0';
+			switch (srcdata)
+			{
+				case 0:
+					printf(" 0  - By hardware configuration of currently selected BIOS\n");
+					break;
+				case 1:
+					printf(" 1  - Switch to Fail - Safe BIOS\n");
+					break;
+				case 2:
+					printf(" 2  - Switch to External BIOS(SPI0 on carrier)\n");
+					break;
+				case 3:
+					printf(" 3  - Switch to Internal BIOS(SPI0 on module)\n");
+					break;
+			}
+		}
+		else
+			printf("Get EApi information failed\n");
+		return sts;
+	}
+
 	if(GetBiosStatus)
 	{
 		if((sts= EApiGetBiosStatus(&srcdata))==0)
 		{
 			srcdata -= '0';
 			switch (srcdata)
-                        {
-                        case 0:
-               			 printf("PICMG BIOS selected\n");
-                                 printf(" 0    0    0  -  Module SPI0/ Carrier SPI1 (Standard BIOS)\n");
-                                 break;
-                        case 1:
-				 printf("PICMG BIOS selected\n");
-                		 printf(" 0    0    1  -   Carrier SPI0/ Module SPI1 (Fail - Safe BIOS)\n");
-                                 break;
-                        case 2:
-				 printf("PICMG BIOS selected\n");
-                		 printf(" 0    1    0  -   Unknown\n");
-                                 break;
-                        case 3:
-				 printf("PICMG BIOS selected\n");
-                		 printf(" 0    1    1  -   Module SPI0/Module SPI1 (Standard BIOS)\n");
-                                 break;
-                        case 4:
-                		printf("Dual BIOS selected\n");
-                		printf(" 1    0    0  -   Unknown\n");
-                                break;
-                        case 5:
-                		printf("Dual BIOS selected\n");
-               		 	printf(" 1    0    1  -   Switch to Fail-Safe BIOS\n");
-                                break;
-                        case 6:
-                		printf("Dual BIOS selected\n");
-                		printf(" 1    1    0  -   Switch to External BIOS\n");
-				break;
-                        case 7:
-                		printf("Dual BIOS selected\n");
-                		printf(" 1    1    1  -   Switch to Internal BIOS \n");
-                                break;
-                        }
+			{
+				case 0:
+					printf("PICMG BIOS selected\n");
+					printf(" 0    0    0  -  Module SPI0/ Carrier SPI1 (Standard BIOS)\n");
+					break;
+				case 1:
+					printf("PICMG BIOS selected\n");
+					printf(" 0    0    1  -   Carrier SPI0/ Module SPI1 (Fail - Safe BIOS)\n");
+					break;
+				case 2:
+					printf("PICMG BIOS selected\n");
+					printf(" 0    1    0  -   Unknown\n");
+					break;
+				case 3:
+					printf("PICMG BIOS selected\n");
+					printf(" 0    1    1  -   Module SPI0/Module SPI1 (Standard BIOS)\n");
+					break;
+				case 4:
+					printf("Dual BIOS selected\n");
+					printf(" 1    0    0  -   Unknown\n");
+					break;
+				case 5:
+					printf("Dual BIOS selected\n");
+					printf(" 1    0    1  -   Switch to Fail-Safe BIOS\n");
+					break;
+				case 6:
+					printf("Dual BIOS selected\n");
+					printf(" 1    1    0  -   Switch to External BIOS\n");
+					break;
+				case 7:
+					printf("Dual BIOS selected\n");
+					printf(" 1    1    1  -   Switch to Internal BIOS \n");
+					break;
+			}
 		}
-                else
-                        printf("Get EApi information failed\n");
-                return sts;
+		else
+			printf("Get EApi information failed\n");
+		return sts;
 	}
 
 	if(GetSEMAVersion)
@@ -1832,18 +2227,6 @@ signed int ParseArgs(int argc, char* argv[])
 		{
 			GPIOSetLevel = TRUE;
 		}
-		else if (argc == 4 && (strcasecmp(argv[2], "gpio_interrupt") == 0))
-		{
-			GPIOEnableInterrupt = TRUE;
-		}
-		else if (argc == 4 && (strcasecmp(argv[2], "gpio_interrupt_read") == 0))
-		{
-			GPIOGetInterrupt = TRUE;
-		}
-		else if (argc == 3 && (strcasecmp(argv[2], "gpio_interrupt_clear") == 0))
-		{
-			GPIOClearInterrupt = TRUE;
-		}
 		else
 		{
 			printf("Wrong arguments \n");
@@ -1923,7 +2306,7 @@ signed int ParseArgs(int argc, char* argv[])
 				printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 				printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 				printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+				printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 				eRet = -3;
 			}
 		}
@@ -2028,13 +2411,13 @@ signed int ParseArgs(int argc, char* argv[])
 					eRet = -3;
 					return eRet;
 				}
-				
+
 				if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt <= 0)
-                                {
-                                        printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
-                                        eRet = -3;
-                                        return eRet;
-                                }
+				{
+					printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
+					eRet = -3;
+					return eRet;
+				}
 
 				I2CFuncArgs.pBuffer = calloc(I2CFuncArgs.nByteCnt, sizeof(unsigned char));
 				if (I2CFuncArgs.pBuffer == NULL)
@@ -2069,82 +2452,82 @@ signed int ParseArgs(int argc, char* argv[])
 			}
 		}
 		else if (argc > 2 && (strcasecmp(argv[2], "raw_xfer") == 0))
-                {
+		{
 			if (argc >= 7)
-                        {
+			{
 				int i;
 				I2CFuncArgs.BusID = atoi(argv[3]);
 				if (I2CFuncArgs.BusID < 1 || I2CFuncArgs.BusID > 5)
-                                {
-                                        printf("Invalid BusID\n");
-                                        printf("  \n[Bus Id]:\n");
-                                        printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
-                                        printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
-                                        printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
-                                        printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                        printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
-				     	 eRet = -3;
-                                }
-                                I2CFuncArgs.Address = string_to_hex(argv[4]);
+				{
+					printf("Invalid BusID\n");
+					printf("  \n[Bus Id]:\n");
+					printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
+					printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
+					printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
+					printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
+					printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+					eRet = -3;
+				}
+				I2CFuncArgs.Address = string_to_hex(argv[4]);
 				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
-                                {
-                                        return -3;
-                                }
-                                I2CFuncArgs.Address = I2CFuncArgs.Address << 1;
+				{
+					return -3;
+				}
+				I2CFuncArgs.Address = I2CFuncArgs.Address << 1;
 				I2CFuncArgs.WByteCnt = atoi(argv[5]);
 				I2CFuncArgs.nByteCnt = atoi(argv[6]);
 
-                                if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt < 0)
-                                {
-                                        printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
-                                        eRet = -3;
-                                        return eRet;
-                                }
+				if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt < 0)
+				{
+					printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
+					eRet = -3;
+					return eRet;
+				}
 
 				if(I2CFuncArgs.nByteCnt == 0)
 				{
 					IsI2CWrRaw = TRUE;
 					I2CFuncArgs.pWrBuffer = calloc(I2CFuncArgs.WByteCnt, sizeof(unsigned char));
-                               	        if (I2CFuncArgs.pWrBuffer == NULL)
-                                	{
-                                        	return -3;
-                                	}
+					if (I2CFuncArgs.pWrBuffer == NULL)
+					{
+						return -3;
+					}
 					if (argc != I2CFuncArgs.WByteCnt + 7)
-                                	{
-                                        	printf("Wrong arguments \n");
-                                        	printf("\nUsage :\n");
-                                        	printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
+					{
+						printf("Wrong arguments \n");
+						printf("\nUsage :\n");
+						printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
 
-                                     		printf("  [Bus Id]:\n");
-                                       		printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
-                                        	printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
-                                        	printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
-                                        	printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                        	printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+						printf("  [Bus Id]:\n");
+						printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
+						printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
+						printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
+						printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
+						printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 						eRet = -3;
-                                	}
+					}
 					else
-                                	{
-                                        	if (I2CFuncArgs.WByteCnt > 32 || I2CFuncArgs.WByteCnt <= 0)
-                                        	{
-                                                	printf("\nInvalid Size maximum write size is 32 bytes, min 1 byte.\n");
-                                                	eRet = -3;
-                                                	return eRet;
-                                        	}		
-                                        	for (i = 0; i < I2CFuncArgs.WByteCnt; i++)
-                                        	{
-                                                	((unsigned char*)(I2CFuncArgs.pWrBuffer))[i] = string_to_hex(argv[7 + i]);
-                                        	}
-                                	}
+					{
+						if (I2CFuncArgs.WByteCnt > 32 || I2CFuncArgs.WByteCnt <= 0)
+						{
+							printf("\nInvalid Size maximum write size is 32 bytes, min 1 byte.\n");
+							eRet = -3;
+							return eRet;
+						}		
+						for (i = 0; i < I2CFuncArgs.WByteCnt; i++)
+						{
+							((unsigned char*)(I2CFuncArgs.pWrBuffer))[i] = string_to_hex(argv[7 + i]);
+						}
+					}
 				}
 				else
 				{
 					IsI2CReRaw = TRUE;
 					I2CFuncArgs.pWrBuffer = calloc(I2CFuncArgs.WByteCnt, sizeof(unsigned char));
-                                        if (I2CFuncArgs.pWrBuffer == NULL)
-                                        {
-                                                return -3;
-                                        }
+					if (I2CFuncArgs.pWrBuffer == NULL)
+					{
+						return -3;
+					}
 					for(i = 0; i < I2CFuncArgs.WByteCnt; i++ )
 					{
 						((unsigned char*)(I2CFuncArgs.pWrBuffer))[i] = string_to_hex(argv[7 + i]);
@@ -2153,43 +2536,43 @@ signed int ParseArgs(int argc, char* argv[])
 					if(argc != I2CFuncArgs.WByteCnt + 7)
 					{
 						printf("Wrong arguments \n");
-                                                printf("\nUsage :\n");
-                                                printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
+						printf("\nUsage :\n");
+						printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
 
-                                                printf("  [Bus Id]:\n");
-                                                printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
-                                                printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
-                                                printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
-                                                printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
+						printf("  [Bus Id]:\n");
+						printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
+						printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
+						printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
+						printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
 						printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 						eRet = -3;
 					}
 					else
 					{
 						I2CFuncArgs.pBuffer = calloc(I2CFuncArgs.nByteCnt, sizeof(unsigned char));
-                                                if (I2CFuncArgs.pBuffer == NULL)
-                                                {
-                                                        return -3;
-                                                }
+						if (I2CFuncArgs.pBuffer == NULL)
+						{
+							return -3;
+						}
 					}
 				}
 			}
-		        else
+			else
 			{
 				printf("Wrong arguments \n");
-                                printf("\nUsage :\n");
-                                printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
+				printf("\nUsage :\n");
+				printf("  semautil /i2c  raw_xfer [bus id] [address] [wr length] [rd length] byte0 byte1 byte2...\n");
 
-                                printf("\n  [Bus Id]:\n");
-                                printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
-                                printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
-                                printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
-                                printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
+				printf("\n  [Bus Id]:\n");
+				printf("    ID\tSEMA EAPI ID\t\t\tDescription\n");
+				printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
+				printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
+				printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
 				printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
-                                eRet = -3;
+				eRet = -3;
 			}	
-		
-                }
+
+		}
 		else if (argc > 2 && (strcasecmp(argv[2], "read_xfer") == 0))
 		{
 			if (argc == 8 || argc == 7)
@@ -2254,7 +2637,7 @@ signed int ParseArgs(int argc, char* argv[])
 					printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 					printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 					printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                       printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+					printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 
 					printf("  [Command Type]:\n");
 					printf("    ID\tENCODED CMD ID\t\tDescription\n");
@@ -2278,7 +2661,7 @@ signed int ParseArgs(int argc, char* argv[])
 					printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 					printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 					printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                       printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n"); 
+					printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n"); 
 
 					printf("  [Command Type]:\n");
 					printf("    ID\tENCODED CMD ID\t\tDescription\n");
@@ -2314,7 +2697,7 @@ signed int ParseArgs(int argc, char* argv[])
 				printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 				printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 				printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+				printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 
 				printf("  [Command Type]:\n");
 				printf("    ID\tENCODED CMD ID\t\tDescription\n");
@@ -2347,7 +2730,7 @@ signed int ParseArgs(int argc, char* argv[])
 					printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 					printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 					printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-				        printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");	
+					printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");	
 					eRet = -3;
 					return eRet;
 				}
@@ -2409,7 +2792,7 @@ signed int ParseArgs(int argc, char* argv[])
 					printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 					printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 					printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                                        printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+					printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 
 					printf("  [Command Type]:\n");
 					printf("    ID\tENCODED CMD ID\t\tDescription\n");
@@ -2448,7 +2831,7 @@ signed int ParseArgs(int argc, char* argv[])
 				printf("    1\tEAPI_ID_I2C_EXTERNAL_1\t\tBaseboard I2C Interface 1\n");
 				printf("    2\tEAPI_ID_I2C_EXTERNAL_2\t\tBaseboard I2C Interface 2\n");
 				printf("    3\tEAPI_ID_I2C_EXTERNAL_3\t\tBaseboard I2C Interface 3\n");
-                               printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
+				printf("    4\tEAPI_ID_I2C_EXTERNAL_4\t\tBaseboard I2C Interface 4\n");
 
 				printf("  [Command Type]:\n");
 				printf("    ID\tENCODED CMD ID\t\tDescription\n");
@@ -2492,31 +2875,31 @@ signed int ParseArgs(int argc, char* argv[])
 	}
 
 	else if (strcasecmp(argv[1], "/src") == 0)
-        {
-                if (argc == 3 && (strcasecmp(argv[2], "get_src") == 0))
-                {
-                        GetBiosSource = TRUE;
-                }
-                else if (argc == 4 && (strcasecmp(argv[2], "set_src") == 0))
-                {
-                        SetBiosSource = TRUE;
-                        srcdata = atoi(argv[3]);
-                        if (srcdata > 3 || srcdata < 0)
-                        {
-                                SetBiosSource = FALSE;
-                                help_condition = 12;
-                        }
-                 }
+	{
+		if (argc == 3 && (strcasecmp(argv[2], "get_src") == 0))
+		{
+			GetBiosSource = TRUE;
+		}
+		else if (argc == 4 && (strcasecmp(argv[2], "set_src") == 0))
+		{
+			SetBiosSource = TRUE;
+			srcdata = atoi(argv[3]);
+			if (srcdata > 3 || srcdata < 0)
+			{
+				SetBiosSource = FALSE;
+				help_condition = 12;
+			}
+		}
 		else if(argc ==3 && (strcasecmp(argv[2], "get_bios_status")== 0))
-                {
-                        GetBiosStatus = TRUE;
-                }
+		{
+			GetBiosStatus = TRUE;
+		}
 
-                else
-                {
-                        help_condition = 12;
-                }
-        }
+		else
+		{
+			help_condition = 12;
+		}
+	}
 
 	else if (strcasecmp(argv[1], "/c") == 0)
 	{
@@ -2528,10 +2911,10 @@ signed int ParseArgs(int argc, char* argv[])
 		{
 			GUIDRead = TRUE;
 		}
-		 else
-                {
-                        help_condition = 13;
-                }
+		else
+		{
+			help_condition = 13;
+		}
 	}
 	else if (strcasecmp(argv[1], "version") == 0)
 	{

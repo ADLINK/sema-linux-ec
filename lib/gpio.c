@@ -41,13 +41,10 @@ static int ngpio = -1;
 #define EAPI_GPIO_EXT	   0x010000000
 
 #define GET_GPIO_DIR    _IOR('a','1',uint32_t *)
-#define SET_GPIO_INT	_IOWR('a','2',uint32_t *)
-#define GET_GPIO_INT	_IOWR('a','3',uint32_t *)
-#define CLR_GPIO_INT	_IOWR('a','4',uint32_t *)
-#define GET_LEVEL	_IOR('a', 'b', int32_t *)
-#define SET_LEVEL  	_IOWR('a', 'c', struct gpiostruct *)
-#define OP_DIRECTION   	_IOWR('a', 'd', struct gpiostruct *)
-#define IN_DIRECTION  	_IOWR('a', 'e', int32_t *)
+#define GET_LEVEL	_IOR('a', '2', int32_t *)
+#define SET_LEVEL  	_IOWR('a', '3', struct gpiostruct *)
+#define OP_DIRECTION   	_IOWR('a', '4', struct gpiostruct *)
+#define IN_DIRECTION  	_IOWR('a', '5', int32_t *)
 
 int gpio_handle;
 int cdev_gpio = 0;
@@ -536,68 +533,4 @@ uint32_t EApiGPIOSetLevel(uint32_t Id, uint32_t Bitmask, uint32_t Level)
 	}
 
         return status;
-}
-
-uint32_t EApiSetGpioInterrupt(uint32_t trigger)
-{
-	uint32_t status = EAPI_STATUS_SUCCESS;
-	int fd;
-
-	if((fd = open("/dev/gpio_adl", O_RDWR)) < 0)
-	{	
-		return EAPI_STATUS_READ_ERROR;
-	}
-	
-	if(ioctl(fd, SET_GPIO_INT, &trigger) < 0)
-	{
-		close(fd);
-		return EAPI_STATUS_WRITE_ERROR;
-	}
-	close(fd);
-	return status;
-}
-
-uint32_t EApiReadGpioInterrupt(uint32_t Id, uint32_t* value)
-{
-	uint32_t status = EAPI_STATUS_SUCCESS, nVal;
-	int fd;
-
-	nVal = Id;
-	
-	if((fd = open("/dev/gpio_adl", O_RDWR)) < 0)
-	{	
-		return EAPI_STATUS_READ_ERROR;
-	}
-
-	if(ioctl(fd, GET_GPIO_INT, &nVal) < 0)
-	{
-		close(fd);
-		return EAPI_STATUS_WRITE_ERROR;
-	}
-	
-	nVal = nVal & (1 << Id);
-	*value = nVal; 
-
-	close(fd);	
-	return status;
-}
-
-uint32_t EApiClearGpioInterrupt()
-{
-	uint32_t status = EAPI_STATUS_SUCCESS,Val = 0;
-	int fd;
-	
-	if((fd = open("/dev/gpio_adl", O_RDWR)) < 0)
-	{	
-		return EAPI_STATUS_READ_ERROR;
-	}
-
-	if(ioctl(fd, CLR_GPIO_INT, &Val) < 0)
-	{
-		close(fd);
-		return EAPI_STATUS_WRITE_ERROR;
-	}
-	
-	close(fd);
-	return status;
 }

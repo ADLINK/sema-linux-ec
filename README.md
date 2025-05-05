@@ -5,7 +5,7 @@
 
 ### Supported Hardware List:
 * LEC-EL,LEC-ALN/ASL
-* cExpress-TL , cExpress-EL, cExpress-AR, cExpress-ALN
+* cExpress-TL , cExpress-EL, cExpress-AR, cExpress-ALN, cExpress-RLP, cExpress-MTL
 * Express-ID7, Express-ADP, Express-TL, Express-RLP
 * COM-HPC-cRLS, COM-HPC-sIDH
 * NanoX-EL
@@ -27,5 +27,5 @@
    
 ### Other information:
 * branch name: SEMA_4.0_Linux_SandBox/ACPI-EC
-* the internal latest commit ID: 5887b280683c8dc1328c91a08af68a8c10290a23
+* the internal latest commit ID: b009a81210f829449db0b1414ca9ad7a2c67a567
 
