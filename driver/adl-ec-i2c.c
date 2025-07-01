@@ -124,6 +124,25 @@ static int check_bmc_status_free(unsigned char *status, int retry_count)
 	return -1;
 }
 
+static int check_bmc_status(unsigned char *status, int retry_count)
+{	
+	register int i;
+
+	for (i = 0; i < retry_count; i++)
+	{
+		if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, status, 1, EC_REGION_2) == 0)
+		{
+			if ((*status & 0x0D) == 0x00)
+			{
+				return 0;
+			}
+		}
+		udelay(2);
+	}
+
+	return -1;
+}
+
 static int check_bmc_status_iic(unsigned char *status, int retry_count)
 {
 	int i;
@@ -164,7 +183,6 @@ static int check_bmc_txn_status(unsigned char *status, int retry_count)
                 }
 		udelay(50);
         }
-
         return -1;
 }
 
@@ -251,12 +269,18 @@ int eapi_read_transaction()
 	
 	BMC_DELAY(buf.Length);
 	
-	if((check_bmc_status_free(&Status, 100)) < 0)
-    		return -1;
-	
     	//5. Checking the I2C status 
-    	if((check_bmc_txn_status(&Status, 400)) < 0)
-       	 return -1;
+ 	if((check_bmc_status(&Status, 10000)) == 0)
+    	{
+		if((check_bmc_txn_status(&Status, 400)) < 0)
+    		{
+    			return -1;
+    		}
+    	}
+    	else
+    	{
+		return -1;
+    	}
 
 	//6. Read EC Data
 	if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BUFFER, buffer, buf.Length, EC_REGION_2) != 0)
@@ -316,8 +340,17 @@ int eapi_transaction(struct eapi_txn *trxn)
     BMC_DELAY(trxn->Length);
 
     //5. Checking the I2C status 
-    if((check_bmc_txn_status(&Status, 400)) < 0)
-       return -1;
+    if((check_bmc_status(&Status, 10000)) == 0)
+    {
+	if((check_bmc_txn_status(&Status, 400)) < 0)
+    	{
+    		return -1;
+    	}
+    }
+    else
+    {
+	return -1;	
+    }
 
     return 0;
 }
@@ -328,6 +361,7 @@ int eapi_rw_transaction(struct eapi_txn *trxn)
     unsigned char buffer[50] = {0}; 
     unsigned char Status;
     volatile int i;
+ 
     //Check if the i2c bus is free
     if((check_bmc_status_free(&Status, 20)) < 0)
                 return -1;
@@ -363,19 +397,16 @@ int eapi_rw_transaction(struct eapi_txn *trxn)
 	
     BMC_DELAY(buffer[4] + buffer[5]);
 
-    if(buffer[5] == 0)
+    if((check_bmc_status(&Status, 10000)) == 0)
     {
-    	if((check_bmc_txn_status(&Status, 400)) < 0)
+	if((check_bmc_txn_status(&Status, 400)) < 0)
     	{
     		return -1;
     	}
     }
     else
     {
- 	if((check_bmc_status_free(&Status, 400)) < 0) 
-	{
-                return -1;
-	}
+	return -1;	
     }
 
     if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_STREAM_RD_BUF, buffer, buffer[5], EC_REGION_2) != 0)
@@ -384,7 +415,6 @@ int eapi_rw_transaction(struct eapi_txn *trxn)
     }
     
     memcpy(buf.tBuffer, buffer, trxn->Length);
-    
     return 0;
 }
 
@@ -416,6 +446,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 			{
 				if(copy_to_user((void*)data, &buf, sizeof(struct eapi_txn))!=0)
 				{
+					mutex_unlock(&i2c_lock);
 					return EFAULT;
 				}
 				mutex_unlock(&i2c_lock);
@@ -426,19 +457,32 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 		case EAPI_TRXN: 
 			if (buf.Type == SEMA_EXT_IIC_READ)
 			{		
-				eapi_read_transaction();
+				if(eapi_read_transaction() < 0 )
+				{
+					mutex_unlock(&i2c_lock);
+					return -1;
+				}
 			}
 			else if (buf.Type == SEMA_EXT_IIC_BLOCK)
 			{
-				eapi_transaction((struct eapi_txn*)&buf);
+				if(eapi_transaction((struct eapi_txn*)&buf) < 0)
+				{
+					mutex_unlock(&i2c_lock);
+					return -1;
+				}
 			}
 			else
 			{
-				eapi_rw_transaction((struct eapi_txn*)&buf);
+				if(eapi_rw_transaction((struct eapi_txn*)&buf) < 0)
+				{
+					mutex_unlock(&i2c_lock);
+					return -1;
+				}
 			}
 
 			if(copy_to_user((void*)data, &buf, sizeof(struct eapi_txn))!=0)
 			{
+				mutex_unlock(&i2c_lock);
 				return EFAULT;
 			}
 			break;
@@ -446,6 +490,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 			bmc_i2c_status((struct eapi_txn*)data);
 			if(copy_to_user((void*)data, &buf, sizeof(struct eapi_txn))!=0)
 			{
+				mutex_unlock(&i2c_lock);
 				return EFAULT;
 			}
 			break;
