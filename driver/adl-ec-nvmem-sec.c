@@ -317,58 +317,67 @@ static int adl_bmc_nvmem_read(void *context, unsigned int offset, void *val, siz
 
 static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, size_t bytes)
 {
-    size_t size=0;
-    int ret=0, i, region=2;
+	size_t size=0;
+	int ret=0, i, region=2;
 
-    if((offset+bytes) > storagesize)
-	    return -EINVAL;
+	if((offset+bytes) > storagesize)
+		return -EINVAL;
 
-    size = bytes;
-    
-    mutex_lock(&adl_dev->mx_nvmem);
+	size = bytes;
 
-	 if(REGION==2)	
-	 {
-    	 offset = offset + 0x6000;
-   	 region=2;
-   	 }
-   	 else if(REGION==3)	
-   	 {
-	 offset = offset + 0x0C00;
-    	 region=3;
-	}
+	mutex_lock(&adl_dev->mx_nvmem);
 
-    for(i = 0; size > 0; i += 32)
-    {
-	if(size > 32)
+	if(REGION==2)	
 	{
-	    delay(200);
-	    if(region==2)
-		ret = WriteMem(region, offset + i, (char*)(val + i), 32);
-	    else
-	    ret = WriteODMMem(region, offset + i, (char*)(val + i), 32);
-	    size -= 32;
+		offset = offset + 0x6000;
+		region=2;
 	}
-	else
+	else if(REGION==3)	
 	{
-	    delay(200);
-	    if(region==2)
-	     ret = WriteMem(region, offset + i, (char*)(val + i), size);
-	    else
-	    ret = WriteODMMem(region, offset + i, (char*)(val + i), size);
-	    
-	    size -= size;
+		offset = offset + 0x0C00;
+		region=3;
 	}
 
-	if (ret < 0)
-        {
-                mutex_unlock(&adl_dev->mx_nvmem);
-		return ret;
-        }
-    }
+	for(i = 0; size > 0; i += 32)
+	{
+		if(size > 32)
+		{
+			delay(200);
+			if(region==2)
+				ret = WriteMem(region, offset + i, (char*)(val + i), 32);
+			else
+				ret = WriteODMMem(region, offset + i, (char*)(val + i), 32);
+			size -= 32;
+		}
+		else
+		{
+			delay(200);
+			if(region==2)
+				ret = WriteMem(region, offset + i, (char*)(val + i), size);
+			else
+			{
+				if(size < 16)
+				{
+					u8 data[20] = {0};
+					strncpy(data, val, size);
+					ret = WriteODMMem(region, offset + i, data, 16);
+				}
+				else
+					ret = WriteODMMem(region, offset + i, (char*)(val + i), size);
+			}
 
-    mutex_unlock(&adl_dev->mx_nvmem);
-    return 0;
+			size -= size;
+		}
+
+		if (ret < 0)
+		{
+			mutex_unlock(&adl_dev->mx_nvmem);
+			return ret;
+		}
+	}
+
+	mutex_unlock(&adl_dev->mx_nvmem);
+	return 0;
 }
 
 struct kobj_attribute attr0 = __ATTR_RO(nvmemcap);
