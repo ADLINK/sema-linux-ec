@@ -165,7 +165,6 @@ uint32_t EApiBoardGetValue(uint32_t Id, uint32_t *pValue)
 	{
                 return EAPI_STATUS_UNSUPPORTED;
 	}
-
 	switch (Id)
 	{
 		case EAPI_ID_GET_EAPI_SPEC_VERSION:
@@ -187,8 +186,8 @@ uint32_t EApiBoardGetValue(uint32_t Id, uint32_t *pValue)
 				sprintf(sysfile, "/sys/class/thermal/thermal_zone1/temp");
 			}
 			break;
-		case EAPI_ID_HWMON_SYSTEM_TEMP:
-			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_cur_temp",hwmon_number);
+		case EAPI_ID_HWMON_BOARD_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/bd1_cur_temp",hwmon_number);
 			break;
 		case EAPI_ID_HWMON_VOLTAGE_VCORE:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/voltage_vcore");
@@ -229,14 +228,14 @@ uint32_t EApiBoardGetValue(uint32_t Id, uint32_t *pValue)
 		case EAPI_SEMA_ID_BOARD_CAPABILITIES_EX:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/capabilities_ext");
 			break;
-		case EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP:
-			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_min_temp", hwmon_number);
+		case EAPI_SEMA_ID_BOARD_MIN_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/bd1_min_temp", hwmon_number);
 			break;
-		case EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP:
-			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_max_temp", hwmon_number);
+		case EAPI_SEMA_ID_BOARD_MAX_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/bd1_max_temp", hwmon_number);
 			break;
-		case EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP:
-			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_startup_temp", hwmon_number);
+		case EAPI_SEMA_ID_BOARD_STARTUP_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/bd1_startup_temp", hwmon_number);
 			break;
 		case EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP:
 			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/cpu_min_temp",hwmon_number);
@@ -292,7 +291,18 @@ uint32_t EApiBoardGetValue(uint32_t Id, uint32_t *pValue)
 		case EAPI_SEMA_ID_IO_CURRENT:
 			sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/main_current");
 			break;
-		
+		case EAPI_ID_HWMON_SYSTEM_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_cur_temp",hwmon_number);
+			break;
+		case EAPI_SEMA_ID_SYSTEM_MIN_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_min_temp", hwmon_number);
+			break;
+		case EAPI_SEMA_ID_SYSTEM_MAX_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_max_temp", hwmon_number);
+			break;
+		case EAPI_SEMA_ID_SYSTEM_STARTUP_TEMP:
+			sprintf(sysfile, "/sys/class/hwmon/hwmon%d/device/sys1_startup_temp", hwmon_number);
+			break;
 		default:
 			status = EAPI_STATUS_UNSUPPORTED;
 			return status;

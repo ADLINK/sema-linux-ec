@@ -26,7 +26,7 @@
 #include <eapi.h>
 #include <uuid/uuid.h>
 
-#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_9_25_08_11"
+#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_10_25_08_22"
 
 char*			ExeName;
 uint8_t	SetWatchdog, TriggerWatchdog, StopWatchdog, WatchDogCap,IsPwrUpWDogStart, IsPwrUpWDogStop;
@@ -53,14 +53,14 @@ struct {
 }I2CFuncArgs;
 
 
-unsigned int GetValuesMap[41] =
+unsigned int GetValuesMap[45] =
 { 0,
 	EAPI_ID_GET_EAPI_SPEC_VERSION,
 	EAPI_ID_BOARD_BOOT_COUNTER_VAL,
 	EAPI_ID_BOARD_RUNNING_TIME_METER_VAL,
 	EAPI_ID_BOARD_LIB_VERSION_VAL,
 	EAPI_ID_HWMON_CPU_TEMP,
-	EAPI_ID_HWMON_SYSTEM_TEMP,
+	EAPI_ID_HWMON_BOARD_TEMP,
 	EAPI_ID_HWMON_VOLTAGE_VCORE,
 	EAPI_ID_HWMON_VOLTAGE_2V5,
 	EAPI_ID_HWMON_VOLTAGE_3V3,
@@ -74,9 +74,9 @@ unsigned int GetValuesMap[41] =
 	EAPI_SEMA_ID_BOARD_RESTART_EVENT,
 	EAPI_SEMA_ID_BOARD_CAPABILITIES,
 	EAPI_SEMA_ID_BOARD_CAPABILITIES_EX,
-	EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP,
-	EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP,
-	EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP,
+	EAPI_SEMA_ID_BOARD_MIN_TEMP,
+	EAPI_SEMA_ID_BOARD_MAX_TEMP,
+	EAPI_SEMA_ID_BOARD_STARTUP_TEMP,
 	EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP,
 	EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP,
 	EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP,
@@ -94,7 +94,11 @@ unsigned int GetValuesMap[41] =
 	EAPI_SEMA_ID_BOARD_POWER_CYCLE,
 	EAPI_SEMA_ID_BOARD_BMC_FLAG,
 	EAPI_SEMA_ID_BOARD_BMC_STATUS,
-	EAPI_SEMA_ID_IO_CURRENT
+	EAPI_SEMA_ID_IO_CURRENT,
+	EAPI_ID_HWMON_SYSTEM_TEMP,
+	EAPI_SEMA_ID_SYSTEM_MIN_TEMP,
+	EAPI_SEMA_ID_SYSTEM_MAX_TEMP,
+	EAPI_SEMA_ID_SYSTEM_STARTUP_TEMP,
 };
 
 unsigned GetStringMap[17] = {
@@ -136,7 +140,7 @@ void ShowHelp(int condition)
 {
 	if (condition == 0)
 	{
-		printf("Usage:\n");
+		printf("\nUsage:\n");
 		printf("- Display this screen:\n");
 		printf("	semautil /h\n\n");
 		printf("- Get SEMA Version:\n");
@@ -144,7 +148,7 @@ void ShowHelp(int condition)
 	}
 	if (condition == 1 || condition == 0)
 	{
-		printf("- Watch Dog:\n");
+		printf("\n- Watch Dog:\n");
 		printf("  1. semautil /w get_cap\n");
 		printf("  2. semautil /w start [sec (0-65535)] \n");
 		printf("  3. semautil /w trigger\n");
@@ -155,7 +159,7 @@ void ShowHelp(int condition)
 	}
 	if (condition == 2 || condition == 0)
 	{
-		printf("- Storage:\n");
+		printf("\n- Storage:\n");
 		printf("  1. semautil /s get_cap [Region]\n");
 		printf("  2. semautil /s read [Region] [Address] [Length] \n");
 		printf("  3. semautil /s write [Region] [Address] [string/value] \n");
@@ -184,25 +188,43 @@ void ShowHelp(int condition)
 		printf("     7.MAC Id\n");
 		printf("     8.MAC Id 2\n\n");
 
-		printf("     Example: semautil /s write 1 1020 Aaaa\n          It will be written to 1020, 1021, 1022, 1023\n\n");
+		printf("     Example: semautil /s write 1 1020 Aaaa\n              It will be written to 1020, 1021, 1022, 1023\n\n");
 		//printf("\n     Note: Hexa decimal values are not valid\n     Note: Locking of ODM region will only make ODM is read-only.\n          lock function will not protect User region.\n          read and write function will not work on ODM region\n");
-		printf("     Note : Unlock the ODM region to perform odm_write operation\n            hex_write operation should be provided as below\n	Example: semautil /s hex_write 1 128 aa bb c d \n");
+		printf("     Note : Unlock the ODM region to perform odm_write operation\n            hex_write operation should be provided as below\n	    Example: semautil /s hex_write 1 128 aa bb c d \n\n");
 	}
 	if (condition == 3 || condition == 0)
 	{
-		printf("- Smart FAN control:\n");
+		printf("\n- Smart FAN control:\n");
 		printf("  1. semautil /f set_temp_points [FanID] [Level1] [Level2] [Level3] [Level4] \n");
 		printf("  2. semautil /f set_pwm_points  [FanID] [PWMLevel1] [PWMLevel2] [PWMLevel3] [PWMlevel4] \n");
 		printf("  3. semautil /f get_temp_points [FanID] \n");
 		printf("  4. semautil /f get_pwm_points  [FanID] \n");
 		printf("  5. semautil /f set_temp_source [FanID] [TempSrc]\n");
 		printf("  6. semautil /f get_temp_source [FanID] \n");
-		printf("  7. semautil /f get_mode [FanID] \n");
-		printf("  8. semautil /f set_mode [FanID] [Mode]\n");
+		printf("  7. semautil /f get_mode        [FanID] \n");
+		printf("  8. semautil /f set_mode        [FanID] [Mode]\n");
 		printf("\n     FanID\n     0:CPU fan\n     1:System fan 1\n");
 		printf("\n     Mode\n     0:Auto\n     1:Off\n     2:On\n     3:Soft\n");
-		printf("\n     TempSrc\n     0-CPU sensor\n     1-Board sensor\n\n");
-
+		FILE *fp = fopen("/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name", "r");
+		if (fp == NULL)
+		{
+			printf("\n     TempSrc\n     0-CPU sensor\n     1-Board sensor\n\n");
+		}
+		else
+		{
+			char value[100];
+    			fgets(value, sizeof(value), fp);
+			if(strstr(value, "HPC") != NULL)
+			{
+				printf("\n     CPU Fan TempSrc\n     0-CPU sensor\n     1-Board sensor\n");
+				printf("\n     System Fan1 TempSrc\n     0-CPU sensor\n     1-Carrier sensor\n\n");
+			}
+			else
+			{
+				printf("\n     TempSrc\n     0-CPU sensor\n     1-Board sensor\n\n");
+			}
+			fclose(fp);
+		}
 	}
 	if (condition == 4 || condition == 0)
 	{
@@ -222,31 +244,30 @@ void ShowHelp(int condition)
 		printf("       12 : Board MAC address 1\n");
 		printf("       13 : Board MAC address 2\n");
 		printf("       14 : Board 2nd HW revision number\n");
-		printf("       15 : Board 2nd serial\n");
-
+		printf("       15 : Board 2nd serial\n\n");
 	}
 	if (condition == 5 || condition == 0)
 	{
-		printf("- Voltage monitor:\n");
+		printf("\n- Voltage monitor:\n");
 		printf("  1. semautil /v get_voltage_cap \n");
 		printf("  2. semautil /v get_voltage [Channel (0-15)] \n\n");
 	}
 
 	if (condition == 6 || condition == 0)
 	{
-		printf("- Error log:\n");
+		printf("\n- Error log:\n");
 		printf("  1. semautil /e get_error_log [Position(0-31)]\n");
 		printf("  2. semautil /e get_cur_error_log\n");
 		printf("  3. semautil /e get_bmc_error_code [Error Number]\n\n");
 	}
 	if (condition == 7 || condition == 0)
 	{
-		printf("- Exception Description :\n");
+		printf("\n- Exception Description :\n");
 		printf("  1. semautil /x get_excep_desc\n\n");
 	}
 	if (condition == 8 || condition == 0)
 	{
-		printf("- GPIO:\n");
+		printf("\n- GPIO:\n");
 		printf("  1. semautil /g get_direction_cap   [ID]\n");
 		printf("  2. semautil /g get_direction       [GPIO Bit]\n");
 		printf("  3. semautil /g set_direction       [GPIO Bit] [0 - Output or 1 - Input]\n");
@@ -258,14 +279,14 @@ void ShowHelp(int condition)
 	}
 	if (condition == 9 || condition == 0)
 	{
-		printf("- Board values:\n");
+		printf("\n- Board values:\n");
 		printf("  1. semautil /d  get_value [EAPI ID] \n");
 		printf("       1	:  EAPI Specification Version\n");
 		printf("       2	:  Boot Counter\n");
 		printf("       3	:  Running time meter value\n");
 		printf("       4	:  Vendor Specific Library Version\n");
 		printf("       5	:  CPU Temperature\n");
-		printf("       6	:  System Temperature\n");
+		printf("       6	:  Board Temperature\n");
 		printf("       7	:  CPU Core Voltage\n");
 		printf("       8	:  2.5V Voltage\n");
 		printf("       9	:  3.3V Voltage\n");
@@ -299,11 +320,15 @@ void ShowHelp(int condition)
 		printf("       37	:  Get Board power cycle counter\n");
 		printf("       38	:  Get Board BMC Flag\n");
 		printf("       39	:  Get Board BMC Status\n");
-		printf("       40	:  IO Current\n\n");
+		printf("       40	:  IO Current\n");
+		printf("       41	:  System Temperature\n");
+		printf("       42	:  System Min Temperature\n");
+		printf("       43	:  System Max Temperature\n");
+		printf("       44	:  System Startup Temperature\n\n");
 	}
 	if (condition == 10 || condition == 0)
 	{
-		printf("- LVDS Backlight control:\n");
+		printf("\n- LVDS Backlight control:\n");
 		printf("  1. semautil /b  set_bkl_value   [ID] [Level (0-255)]\n");
 		printf("  2. semautil /b  set_bkl_enable  [ID] [0-Disable or 1-Enable]\n");
 		printf("  3. semautil /b  get_bkl_value   [ID]\n");
@@ -346,7 +371,7 @@ void ShowHelp(int condition)
 		printf("\n- Get BIOS Source:\n");
 		printf("  1. semautil /src  get_src\n");
 		printf("  2. semautil /src  set_src value[0-3]\n");
-		printf("  3. semautil /src get_bios_status\n");
+		printf("  3. semautil /src  get_bios_status\n");
 		printf("  \n	Value   :\n");
 		printf("	 0      -   By hardware configuration of currently selected BIOS\n");
 		printf("	 1      -   Switch to Fail-Safe BIOS\n");
@@ -365,16 +390,14 @@ void ShowHelp(int condition)
 		printf("	 1    1    0  -   Switch to External BIOS\n");
 		printf("	 1    1    1  -   Switch to Internal BIOS \n\n");
 		printf("  If Bit 2 is OFF : PICMG BIOS selected\n");
-		printf("  If Bit 2 is ON : Dual BIOS selected\n");
-
+		printf("  If Bit 2 is ON : Dual BIOS selected\n\n");
 	}
 	if (condition == 13 || condition == 0)
 	{
-		printf("- UUID :\n");
+		printf("\n- UUID :\n");
 		printf("  1. semautil /c guid_generate_write\n");
-		printf("  2. semautil /c guid_read\n");	
+		printf("  2. semautil /c guid_read\n\n");	
 	}
-
 }
 
 int DispatchCMDToSEMA(int argc,char *argv[])
@@ -506,7 +529,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			exit(-1);
 		}
 		Id = atoi(argv[3]);
-		if(Id>40 || Id<1){
+		if(Id>44 || Id<1){
 			printf("Wrong arguments GetValue\n");
 			exit(-1);
 		}
@@ -552,10 +575,10 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nSEMA Library Version : %s\n\n", formattedNum);
 				break;
 			case EAPI_ID_HWMON_CPU_TEMP:
-				printf("\nCPU temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nCPU temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
-			case EAPI_ID_HWMON_SYSTEM_TEMP:
-				printf("\nSystem Temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+			case EAPI_ID_HWMON_BOARD_TEMP:
+				printf("\nBoard Temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_VCORE:
 				printf("\nCPU Core Voltage: %d mV\n\n", Value);
@@ -691,23 +714,23 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				}
 				printf("\n\n");
 				break;
-			case EAPI_SEMA_ID_BOARD_SYSTEM_MIN_TEMP:
-				printf("\nBoard minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+			case EAPI_SEMA_ID_BOARD_MIN_TEMP:
+				printf("\nBoard minimum temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
-			case EAPI_SEMA_ID_BOARD_SYSTEM_MAX_TEMP:
-				printf("\nBoard maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+			case EAPI_SEMA_ID_BOARD_MAX_TEMP:
+				printf("\nBoard maximum temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
-			case EAPI_SEMA_ID_BOARD_SYSTEM_STARTUP_TEMP:
-				printf("\nBoard startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+			case EAPI_SEMA_ID_BOARD_STARTUP_TEMP:
+				printf("\nBoard startup temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_CPU_MIN_TEMP:
-				printf("\nCPU minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nCPU minimum temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_CPU_MAX_TEMP:
-				printf("\nCPU maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nCPU maximum temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_CPU_STARTUP_TEMP:
-				printf("\nCPU startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nCPU startup temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_MAIN_CURRENT:
 				printf("\nMain power current: %d mA\n\n", Value);
@@ -731,16 +754,16 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nSystem Fan 3 speed: %d RPM\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP:
-				printf("\nBoard 2nd Current temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nBoard 2nd Current temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MIN_TEMP:
-				printf("\nBoard 2nd minimum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nBoard 2nd minimum temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_MAX_TEMP:
-				printf("\nBoard 2nd maximum temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nBoard 2nd maximum temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_STARTUP_TEMP:
-				printf("\nBoard 2nd startup temperature:  %u K (%u C)\n\n",Value, EAPI_DECODE_CELCIUS(Value));
+				printf("\nBoard 2nd startup temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_POWER_CYCLE:
 				printf("\nPower cycle counter: %d\n\n", Value);
@@ -863,6 +886,18 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				break;
 			case EAPI_SEMA_ID_IO_CURRENT:
 				printf("\nIO Current: %d mA\n\n",Value);
+				break;
+			case EAPI_ID_HWMON_SYSTEM_TEMP:
+				printf("\nSystem Temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
+				break;
+			case EAPI_SEMA_ID_SYSTEM_MIN_TEMP:
+				printf("\nSystem minimum temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
+				break;
+			case EAPI_SEMA_ID_SYSTEM_MAX_TEMP:
+				printf("\nSystem maximum temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
+				break;
+			case EAPI_SEMA_ID_SYSTEM_STARTUP_TEMP:
+				printf("\nSystem startup temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			default:
 				printf("\n%d\n\n",Value);
@@ -1181,6 +1216,21 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("Get EApi information failed\n");
 			errno_exit("EApiSmartFanSetTempSrc");
 		}
+
+		if(fid == 1 && Tempsrc == 1)
+                {
+                        Id = EAPI_ID_BOARD_NAME_STR;
+                        Size = sizeof(BoardInfo);
+                        if(EApiBoardGetStringA(Id, BoardInfo, &Size) == EAPI_STATUS_SUCCESS)
+                        {
+                                if(strstr(BoardInfo, "HPC") != NULL)
+                                {
+					printf("Temperature source is set to Carrier sensor\n");
+                                        return 0;
+                                }
+                        }
+                }
+
 		if(Tempsrc)
 			printf("Temperature source is set to Baseboard sensor\n");
 		else
@@ -1203,6 +1253,20 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("Get EApi information failed\n");
 			errno_exit("EApiSmartFanGetTempSrc");
 		}
+		if(fid == 1 && Tempsrc == 1)
+		{
+			Id = EAPI_ID_BOARD_NAME_STR;
+			Size = sizeof(BoardInfo);
+                	if(EApiBoardGetStringA(Id, BoardInfo, &Size) == EAPI_STATUS_SUCCESS)
+                	{
+                		if(strstr(BoardInfo, "HPC") != NULL)
+                		{
+					printf("Current Temperature source is Carrier sensor\n");
+					return 0;
+                		}
+                	}
+		}
+
 		if(Tempsrc)
 			printf("Current Temperature source is Baseboard sensor\n");
 		else
@@ -1338,8 +1402,8 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("0x%02X ", memcap[i]);
 		}
 		printf("\n");
-
 	}
+
 	if(GUIDWrite)
 	{
 		if(argc != 3){
@@ -2061,7 +2125,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 1;
 		}
 	}
@@ -2101,7 +2164,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 2;
 		}
 	}
@@ -2141,7 +2203,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 3;
 		}
 	}
@@ -2153,7 +2214,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 4;
 		}
 	}
@@ -2169,7 +2229,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 5;
 		}
 	}
@@ -2189,7 +2248,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 6;
 		}
 	}
@@ -2201,7 +2259,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 7;
 		}
 	}
@@ -2229,7 +2286,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 8;
 		}
 	}
@@ -2241,7 +2297,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 9;
 		}
 	}
@@ -2265,7 +2320,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			help_condition = 10;
 		}
 	}
@@ -2847,7 +2901,6 @@ signed int ParseArgs(int argc, char* argv[])
 		}
 		else
 		{
-			printf("Wrong arguments \n");
 			printf("\n- Generic I2C Read/Write:\n");
 			printf("  1. semautil /i2c  bus_cap\n");
 			printf("  2. semautil /i2c  probe_device   [bus id]\n");
@@ -2869,7 +2922,7 @@ signed int ParseArgs(int argc, char* argv[])
 			printf("    ID\tENCODED CMD ID\t\tDescription\n");
 			printf("    1\tEAPI_I2C_NO_CMD\t\tSpecify no command/index is used\n");
 			printf("    2\tEAPI_I2C_ENC_STD_CMD\tExtended standard 8 bits CMD\n");
-			printf("    3\tEAPI_I2C_ENC_EXT_CMD\tExtended standard 16 bits CMD\n");
+			printf("    3\tEAPI_I2C_ENC_EXT_CMD\tExtended standard 16 bits CMD\n\n");
 			eRet = -3;
 		}
 	}

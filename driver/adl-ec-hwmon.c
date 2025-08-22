@@ -180,7 +180,6 @@ static ssize_t set_fan_enable_temp_src(struct device *dev, struct device_attribu
 				goto Exit;
 			}
 
-
 			if (hwmon_data->soft_fan == 0 && val == 3)
 			{
 				size = -EINVAL;
@@ -601,6 +600,15 @@ static ssize_t show_temp_input(struct device *dev, struct device_attribute *attr
 			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
 			break;
 		case 1:
+			ret = adl_bmc_ec_read_device(ADL_BMC_OFS_RD_BOARD_TEMP, &buff, 1, EC_REGION_1);
+			if(ret < 0)
+				return ret;
+
+			temper = encode_celcius (buff);
+			
+			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
+			break;
+		case 2:
 			ret = adl_bmc_ec_read_device(ADL_BMC_OFS_RD_SYSTEM_TEMP, &buff, 1, EC_REGION_1);
 			if(ret < 0)
 				return ret;
@@ -613,7 +621,6 @@ static ssize_t show_temp_input(struct device *dev, struct device_attribute *attr
 			debug_printk(KERN_INFO "Index is not Matcing\n");
 			break;
 	}
-
 
 	return sprintf(buf, "%hu\n", temper);
 }
@@ -646,12 +653,19 @@ static ssize_t show_temp_min(struct device *dev, struct device_attribute *attr, 
 
 			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
 			break;
+		case 2:
+			ret = adl_bmc_ec_read_device(ADL_BMC_OFS_RD_MINSYS_TEMP, &buff, 1, EC_REGION_1);
 
+			if(ret < 0)
+				return ret;
+			temper = encode_celcius(buff);
+
+			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
+			break;
 		default:
 			debug_printk(KERN_INFO "Index is not Matcing\n");
 			break;
 	}
-
 
 	return sprintf(buf, "%hu\n", temper);
 }
@@ -683,15 +697,20 @@ static ssize_t show_temp_max(struct device *dev, struct device_attribute *attr, 
 			temper = encode_celcius(buff);
 			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
 			break;
+		case 2:
+			ret = adl_bmc_ec_read_device(ADL_BMC_OFS_RD_MAXSYS_TEMP, &buff, 1, EC_REGION_1);
+
+			if(ret < 0)
+				return ret;
+			temper = encode_celcius(buff);
+			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
+			break;
 		default:
 			debug_printk(KERN_INFO "Index is not Matcing\n");
 			break;
 	}
 
-
 	return sprintf(buf, "%hu \n", temper);
-
-
 }
 
 static ssize_t show_temp_startup(struct device *dev, struct device_attribute *attr, char *buf)
@@ -719,7 +738,14 @@ static ssize_t show_temp_startup(struct device *dev, struct device_attribute *at
 			temper = encode_celcius(buff);
 			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
 			break;
+		case 2:
+			ret = adl_bmc_ec_read_device(ADL_BMC_OFS_RD_SYS_STARTUP_TEMP, &buff, 1, EC_REGION_1);
 
+			if(ret < 0)
+				return ret;
+			temper = encode_celcius(buff);
+			debug_printk("%s ix %d buff %d temper %d\n", __func__, ix, buff, temper);
+			break;
 		default:
 			debug_printk(KERN_INFO "Index is not Matcing\n");
 			break;
@@ -727,8 +753,6 @@ static ssize_t show_temp_startup(struct device *dev, struct device_attribute *at
 
 	return sprintf(buf, "%u \n", temper);
 }
-
-
 
 #define SENSOR_ATTR_FAN_CPU(ix) \
 	SENSOR_ATTR_2(cpu_fan_speed, S_IRUGO, \
@@ -746,6 +770,16 @@ SENSOR_ATTR_2(cpu_min_temp, S_IRUGO, \
 SENSOR_ATTR_2(cpu_max_temp, S_IRUGO, \
 		show_temp_max, NULL, SHOW_TEMP_MAX, ix-1), \
 SENSOR_ATTR_2(cpu_startup_temp, S_IRUGO, \
+		show_temp_startup, NULL, SHOW_TEMP_STARTUP, ix-1), \
+
+#define SENSOR_ATTR_TEMP_BOARD1(ix) \
+	SENSOR_ATTR_2(bd1_cur_temp, S_IRUGO, \
+			show_temp_input, NULL, SHOW_TEMP_INPUT, ix-1),\
+SENSOR_ATTR_2(bd1_min_temp, S_IRUGO, \
+		show_temp_min, NULL, SHOW_TEMP_MIN, ix-1), \
+SENSOR_ATTR_2(bd1_max_temp, S_IRUGO, \
+		show_temp_max, NULL, SHOW_TEMP_MAX, ix-1), \
+SENSOR_ATTR_2(bd1_startup_temp, S_IRUGO, \
 		show_temp_startup, NULL, SHOW_TEMP_STARTUP, ix-1), \
 
 #define SENSOR_ATTR_TEMP_SYSTEM1(ix) \
@@ -775,7 +809,11 @@ static struct sensor_device_attribute_2 adl_bmc_sysfs_cpu_temp[] = {
 };
 
 static struct sensor_device_attribute_2 adl_bmc_sysfs_board_temp[] = {
-	SENSOR_ATTR_TEMP_SYSTEM1(2)
+	SENSOR_ATTR_TEMP_BOARD1(2)
+};
+
+static struct sensor_device_attribute_2 adl_bmc_sysfs_system_temp[] = {
+	SENSOR_ATTR_TEMP_SYSTEM1(3)
 };
 
 //Fan 
@@ -822,10 +860,17 @@ static void adl_bmc_hwmon_remove_sysfs(struct platform_device *pdev)
 
 	if (hwmon_data->adl_dev->Bmc_Capabilities[0] & ADL_BMC_CAP_TEMP)
 	{
-
 		for (i = 0; i < ARRAY_SIZE(adl_bmc_sysfs_board_temp); i++)
 		{
 			device_remove_file(&pdev->dev, &adl_bmc_sysfs_board_temp[i].dev_attr);
+		}
+	}
+
+	if (hwmon_data->adl_dev->Bmc_Capabilities[0] & ADL_BMC_CAP_TEMP)
+	{
+		for (i = 0; i < ARRAY_SIZE(adl_bmc_sysfs_system_temp); i++)
+		{
+			device_remove_file(&pdev->dev, &adl_bmc_sysfs_system_temp[i].dev_attr);
 		}
 	}
 
@@ -933,6 +978,17 @@ static int adl_bmc_hwmon_probe(struct platform_device *pdev)
 		for (i = 0; i < ARRAY_SIZE(adl_bmc_sysfs_board_temp); i++)
 		{
 			err = device_create_file(&pdev->dev, &adl_bmc_sysfs_board_temp[i].dev_attr);
+			if (err)
+				dev_err(&pdev->dev, "Creation of sysfs entry failed %d\n", err);
+		}
+	}
+
+	/*check system temperature capability and create sysfs entry for system tempearature*/
+	if (hwmon_data->adl_dev->Bmc_Capabilities[0] & ADL_BMC_CAP_TEMP) 
+	{
+		for (i = 0; i < ARRAY_SIZE(adl_bmc_sysfs_system_temp); i++)
+		{
+			err = device_create_file(&pdev->dev, &adl_bmc_sysfs_system_temp[i].dev_attr);
 			if (err)
 				dev_err(&pdev->dev, "Creation of sysfs entry failed %d\n", err);
 		}

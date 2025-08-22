@@ -69,7 +69,8 @@
 #define ADL_BMC_OFS_RD_TOM                      0x20            ///< Read total uptime minutes
 #define ADL_BMC_OFS_BKLIGHT_PWM                 0x6C            ///< Set/Get Backlight Brightness
 #define ADL_BMC_OFS_HW_MON_IN                   0x50            //Hardware monitor input
-#define ADL_BMC_OFS_RD_SYSTEM_TEMP		0x2F		///< Read System/Board Temperature
+#define ADL_BMC_OFS_RD_BOARD_TEMP		0x2F		///< Read Board Temperature
+#define ADL_BMC_OFS_RD_SYSTEM_TEMP		0x48		///< Read System Temperature
 #define ADL_BMC_OFS_RD_CPU_FAN			0x60		///< Read CPU fan speed
 #define ADL_BMC_OFS_RD_SYSTEM_FAN_1		0x62		///< Read system fan 1 speed
 
@@ -77,12 +78,15 @@
 #define ADL_BMC_OFS_RD_MINCPU_TEMP              0x31            // Minimum CPU Temperature
 #define ADL_BMC_OFS_RD_MAXBRD_TEMP              0x32            // Maximum Board Temperature
 #define ADL_BMC_OFS_RD_MINBRD_TEMP              0x33            // Minimum Board Temperature
+#define ADL_BMC_OFS_RD_MAXSYS_TEMP              0x49            // Maximum System Temperature
+#define ADL_BMC_OFS_RD_MINSYS_TEMP              0x4A            // Minimum System Temperature
 #define ADL_BMC_OFS_RD_CPU_STARTUP_TEMP		0x34		///< Read CPU Start Up temperature of CPU
 #define ADL_BMC_OFS_RD_BRD_STARTUP_TEMP		0x35		///< Read Start Up temperature of Board
+#define ADL_BMC_OFS_RD_SYS_STARTUP_TEMP		0x4B		///< Read Start Up temperature of System
+
 #define ADL_BMC_OFS_RD_BMC_STATUS               0x36            ///< Read BMC status
 
 #define ADL_MAX_HW_MTR_INPUT                    8               //Max Number of supported voltages
-
 
 #define ADL_BMC_OFS_RD_BLVERSION		0x3F		///< Read boot loader version
 #define ADL_BMC_OFS_SET_ADDRESS        		0x40            ///< Set address and length for flash access
