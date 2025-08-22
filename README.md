@@ -7,7 +7,7 @@
 * LEC-EL,LEC-ALN/ASL
 * cExpress-TL , cExpress-EL, cExpress-AR, cExpress-ALN, cExpress-RLP, cExpress-MTL
 * Express-ID7, Express-ADP, Express-TL, Express-RLP
-* COM-HPC-cRLS, COM-HPC-sIDH
+* COM-HPC-cRLS, COM-HPC-sIDH, COM-HPC-mMTL
 * NanoX-EL
 * Q7-EL
 * Express-VR7
@@ -27,5 +27,5 @@
    
 ### Other information:
 * branch name: SEMA_4.0_Linux_SandBox/ACPI-EC
-* the internal latest commit ID: 9ee20907474b184a316e9ab6fe775075b19cbd6c
+* the internal latest commit ID: f87278bf386fc1dbc5bb5a4e807143b699cb18f3
 
