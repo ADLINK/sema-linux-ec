@@ -1,4 +1,4 @@
-
+# SPDX-License-Identifier: BSD-3-Clause
 SEMA_OBJS = $(patsubst %.c,%.o,$(wildcard lib/*.c))
 WDOG_OBJS = $(patsubst %.c,%.o,$(wildcard watchdogtest/*.c))
 APP_OBJS = $(patsubst %.c,%.o,$(wildcard app/*.c))
@@ -96,5 +96,11 @@ semautil: $(APP_OBJS)
 wdogtest: $(WDOG_OBJS)
 	@gcc $^ -g -o $@
 
-%.o: %.c
-	@gcc -Wall -I lib -g -fPIC -c $^ -o $@
+lib/%.o: lib/%.c
+	@gcc -Wall -I lib -g -fPIC -c $< -o $@
+
+app/%.o: app/%.c
+	@gcc -Wall -I lib -g -fPIC -c $< -o $@
+
+watchdogtest/%.o: watchdogtest/%.c
+	@gcc -Wall -I lib -g -fPIC -c $< -o $@

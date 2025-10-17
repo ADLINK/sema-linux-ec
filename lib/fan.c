@@ -1,4 +1,4 @@
-// Software License Agreement (BSD License)
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2022, ADLINK Technology, Inc
 // All rights reserved.

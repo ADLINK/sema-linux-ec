@@ -1,4 +1,4 @@
-// Software License Agreement (BSD License)
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2022, ADLINK Technology, Inc
 // All rights reserved.
@@ -13,7 +13,7 @@
 //   to endorse or promote products derived from this software without specific
 //   prior written permission of ADLINK Technology, Inc.
 
-// SPDX-License-Identifier: LGPL-2.0+
+
 /*
  * SEMA Library APIs for EC I2C
  *

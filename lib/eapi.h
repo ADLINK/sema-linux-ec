@@ -1,4 +1,4 @@
-// Software License Agreement (BSD License)
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2022, ADLINK Technology, Inc
 // All rights reserved.
@@ -42,7 +42,7 @@
 
 #define SEMA_VERSION_MAJOR 0x04
 #define SEMA_VERSION_MINOR 0x03
-#define SEMA_VERSION_ADDON 0x10
+#define SEMA_VERSION_ADDON 0x11
 #define SEMA_LIB_VERSION EAPI_VER_CREATE(SEMA_VERSION_MAJOR, SEMA_VERSION_MINOR, SEMA_VERSION_ADDON)
 
 
