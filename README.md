@@ -1,6 +1,6 @@
 
 ### How to install SEMA® - EC controller
-* see [documentation](https://adlinktech.github.io/sema/HowToInstallonLinux.html) for more details
+* see [documentation](https://www.adlinktech.com/Products/DownloadMDownload?lang=en&pdNo=1274&MainCategory=Industrial_IoT_and_Cloud_solutions&kind=M) for more details
 
 
 ### Supported Hardware List:
