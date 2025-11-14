@@ -1,0 +1,759 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.6",
+    "serialNumber": "urn:uuid:28a74ee3-a98f-4a93-a149-fdc5ed9518e9",
+    "version": 1,
+    "metadata": {
+        "timestamp": "2025-10-10T06:50:29Z",
+        "tools": [
+            {
+                "vendor": "AboutCode.org",
+                "name": "scancode-toolkit",
+                "version": "32.4.1"
+            }
+        ]
+    },
+    "components": [
+        {
+            "type": "file",
+            "bom-ref": "cacert.pem",
+            "name": "cacert.pem",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "c86451eb4618aeb7a8d702ae1faf039339caa639"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "cakey.pem",
+            "name": "cakey.pem",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "e471d410006d17d57f0b4dd93ec5378b5a2db12c"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "Makefile",
+            "name": "Makefile",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "d294eeea1d5291f0d2fa6e039a959d5573f82202"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "id": "BSD-3-Clause"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "README.md",
+            "name": "README.md",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "390b69910d5fd174493f933a3d3ada89bbb9d986"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "SEMA4.x_EC_Linux_GPI_Interrupt_Handling_Usage_Guidelines.pdf",
+            "name": "SEMA4.x_EC_Linux_GPI_Interrupt_Handling_Usage_Guidelines.pdf",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "d81eed625033dd3d2d23cca59a040d283599c8b2"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "signing_key.pem",
+            "name": "signing_key.pem",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "ffa182007b0e90fa7e18501e1f834babaac7e365"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "signing_key.x509",
+            "name": "signing_key.x509",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "9e73eb728b8def903417bc937fec2aa1dee85fb0"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "x509.genkey",
+            "name": "x509.genkey",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "98cffc3a11f0d9ad33c3ceaef44bd81473d2337d"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "app/main.c",
+            "name": "app/main.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "a3204b273680c17098b9178302e18448febcd0f1"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "certs/signing_key.pem",
+            "name": "certs/signing_key.pem",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "c86451eb4618aeb7a8d702ae1faf039339caa639"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "Unknown"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-bklight.c",
+            "name": "driver/adl-ec-bklight.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "27abb3673d17fc403975f5a025292cdf1141b4d6"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-boardinfo.c",
+            "name": "driver/adl-ec-boardinfo.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "52e6861555adbffa72da94052967caa460ff4948"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-gpio-irq.c",
+            "name": "driver/adl-ec-gpio-irq.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "5335642c00fd64fd1402319fa02a4a927cc7d79e"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-gpio.c",
+            "name": "driver/adl-ec-gpio.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "c06a23307e20d7a0f545005796a47fdc21ee74c3"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-hwmon.c",
+            "name": "driver/adl-ec-hwmon.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "5f2d4e55adeb6487f626b024421d95f2e4a90767"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-i2c.c",
+            "name": "driver/adl-ec-i2c.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "56efeddc3615bda35390c2a281bcb01046ae6af0"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-nvmem-sec.c",
+            "name": "driver/adl-ec-nvmem-sec.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "86eae1705c5781bcb98d1c5752e1a813fed9e35a"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-nvmem.c",
+            "name": "driver/adl-ec-nvmem.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "9dd25368b35461e5f50c793b2f4f2571b79cb335"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-vm.c",
+            "name": "driver/adl-ec-vm.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "7a3671e44e6ebad5cbac29f8b398d6d18904ee77"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec-wdt.c",
+            "name": "driver/adl-ec-wdt.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "ed357f7d15950b672052b3a7bd33a00eb623fb14"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec.c",
+            "name": "driver/adl-ec.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "551b7751202098bc642ead09a639dc3b5fcbca22"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND (BSD-3-Clause OR GPL-2.0-only)"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/adl-ec.h",
+            "name": "driver/adl-ec.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "dfc9ac55fd2f6de720a222e3a329b9c7c5608d8d"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/common.h",
+            "name": "driver/common.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "0825b47a30a7204579dc10097ee68208a2620b4d"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "driver/nvmem-common.c",
+            "name": "driver/nvmem-common.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "420c5a6a3f3a952e32f2195dbdc78b59d3555aa7"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "(GPL-2.0-only OR BSD-3-Clause) AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/backlight.c",
+            "name": "lib/backlight.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "73684bab9e2aa9ad742fa5554e732e486486f612"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/boardinfo.c",
+            "name": "lib/boardinfo.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "a5b5a5b79734b1e22818ebdcde5fbdb0707671b3"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/common.c",
+            "name": "lib/common.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "e75726f435757ec95c3203648feeff96efc445c9"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/common.h",
+            "name": "lib/common.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "19e9bbcb56aa7e0c4c364b89d2b9ed4767306977"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/conv.c",
+            "name": "lib/conv.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "e715dae755edbbe1260dec685db7e9f2f6c3bcc1"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/conv.h",
+            "name": "lib/conv.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "042f507c3ba6b08bb091927d658d131db2b1bad0"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/eapi.h",
+            "name": "lib/eapi.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "e57e57bc631bcab29aaa9847fa3ffdf27b7054b3"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/errorcodes.h",
+            "name": "lib/errorcodes.h",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "26fbba67c29838ee61bf080112feb8af52818b08"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/fan.c",
+            "name": "lib/fan.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "88da2bcb74ed5912fcad29fd3dd0be1486e0b5e6"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/gpio.c",
+            "name": "lib/gpio.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "2e5aebb8783f8e07cfa6a5e9dd0267b1dab12094"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/i2c.c",
+            "name": "lib/i2c.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "1227c3fd74ba6c2d0ebd16bd22375a4b641ba420"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/init.c",
+            "name": "lib/init.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "89cc91c3718f8ae6e2ebf825d7fa74d922df6072"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/storage.c",
+            "name": "lib/storage.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "fd9d9414b91a8e43b0f77376819a993ae701fd9c"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "lib/watchdog.c",
+            "name": "lib/watchdog.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "550761e442b13a67c129efa02a763794f539c588"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "file",
+            "bom-ref": "watchdogtest/watchdog-test.c",
+            "name": "watchdogtest/watchdog-test.c",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-1",
+                    "content": "8c074d20a4be10d861426287d962989657f161d6"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause AND BSD-Source-Code"
+                    }
+                }
+            ]
+        }
+    ]
+}

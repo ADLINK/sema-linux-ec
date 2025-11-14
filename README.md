@@ -1,6 +1,6 @@
 
 ### How to install SEMA® - EC controller
-* see [documentation](https://adlinktech.github.io/sema/HowToInstallonLinux.html) for more details
+* see [documentation](https://www.adlinktech.com/Products/DownloadMDownload?lang=en&pdNo=1274&MainCategory=Industrial_IoT_and_Cloud_solutions&kind=M) for more details
 
 
 ### Supported Hardware List:
@@ -27,5 +27,5 @@
    
 ### Other information:
 * branch name: SEMA_4.0_Linux_SandBox/ACPI-EC
-* the internal latest commit ID: f87278bf386fc1dbc5bb5a4e807143b699cb18f3
+* the internal latest commit ID: f933e426c41ec8dce6bd440bb777d2d5fefa5ea1
 

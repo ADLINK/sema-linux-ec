@@ -1,4 +1,4 @@
-// Software License Agreement (BSD License)
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2022, ADLINK Technology, Inc
 // All rights reserved.
@@ -26,7 +26,7 @@
 #include <eapi.h>
 #include <uuid/uuid.h>
 
-#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_10_25_08_22"
+#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_11_25_10_17"
 
 char*			ExeName;
 uint8_t	SetWatchdog, TriggerWatchdog, StopWatchdog, WatchDogCap,IsPwrUpWDogStart, IsPwrUpWDogStop;
