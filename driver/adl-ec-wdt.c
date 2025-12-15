@@ -49,10 +49,16 @@ static int adl_bmc_wdt_write(unsigned short val)
 	buff[1] = val >> 8;
 
 	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_SET_WD_CURR, ((u8*)(&buff[0])), 2, EC_REGION_1);
+	
+	if (ret < 0) {
+		debug_printk("EC write error (CURR): %d\n", ret);
+		return ret;
+	}
+	
 	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_SET_WD, ((u8*)(&buff[0])), 2, EC_REGION_1);
 
 	if (ret < 0) {
-		debug_printk("EC write error: %d\n", ret);
+		debug_printk("EC write error (SET): %d\n", ret);
 		return ret;
 	}
 	
@@ -189,30 +195,34 @@ int release(struct inode *inode, struct file *file)
 
 static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 {
-        int RetVal;
+        int ret;
         uint16_t timeout;
         switch(cmd)
         {
                 case SET_WDT_TIMEOUT:
                 {
-                        if((RetVal = copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout)))!=0)
+                        if(copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout))!=0)
                         {
                                 return -EFAULT;
                         }
 
-                        RetVal=adl_bmc_wdt_set_timeout(timeout);
+                        ret = adl_bmc_wdt_set_timeout(timeout);
+						if(ret < 0)
+							return ret;
                 }
                 break;
 		case GET_WDT_TIMEOUT:
                 {
-                        if((RetVal = copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout)))!=0)
+                        if(copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout))!=0)
                         {
                                 return -EFAULT;
                         }
 
-                        RetVal= adl_bmc_wdt_get_timeleft(&timeout);
+                        ret = adl_bmc_wdt_get_timeleft(&timeout);
+						if(ret < 0)
+							return ret;
 
-                        if((RetVal = copy_to_user((uint16_t *) arg,&timeout,sizeof(timeout)))!=0)
+                        if(copy_to_user((uint16_t *) arg,&timeout,sizeof(timeout))!=0)
                         {
                                 return -EFAULT;
                         }
@@ -220,20 +230,24 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
                 break;
                 case TRIGGER_WDT:
                 {
-                        if((RetVal = copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout)))!=0)
+                        if(copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout))!=0)
                         {
                                 return -EFAULT;
                         }
-                        RetVal=adl_bmc_wdt_set_timeout(timeout);
+                        ret = adl_bmc_wdt_set_timeout(timeout);
+						if(ret < 0)
+							return ret;
 		}        
                 break;
                 case STOP_WDT_TIMEOUT:
                 {
-                        if((RetVal = copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout)))!=0)
+                        if(copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout))!=0)
                         {
                                 return -EFAULT;
                         }
-                        RetVal=adl_bmc_wdt_stop(timeout);
+                        ret = adl_bmc_wdt_stop(timeout);
+						if(ret < 0)
+							return ret;
                 }
                 break;
  		default:

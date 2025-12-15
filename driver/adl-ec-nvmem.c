@@ -135,14 +135,14 @@ static int adl_bmc_nvmem_read(void *context, unsigned int offset, void *val, siz
 	if(size > 32)
 	{
 	    delay(200);
-	    ret = ReadMem(1, offset + i, (char*)(val + i), 32);
+	    ret = ReadMem(1, offset + i, (char*)val + i, 32);
 	    size -= 32;
 	}
 	else
 	{
 	    delay(200);
-	    ret = ReadMem(1, offset + i, (char*)(val + i), size);
-	    size -= size;
+	    ret = ReadMem(1, offset + i, (char*)val + i, size);
+	    size = 0;
 	}
 
 	if (ret < 0)
@@ -173,14 +173,14 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
 	if(size > 32)
 	{
 	    delay(200);
-	    ret = WriteMem(1, offset + i, (char*)(val + i), 32);
+	    ret = WriteMem(1, offset + i, (char*)val + i, 32);
 	    size -= 32;
 	}
 	else
 	{
 	    delay(200);
-	    ret = WriteMem(1, offset + i, (char*)(val + i), size);
-	    size -= size;
+	    ret = WriteMem(1, offset + i, (char*)val + i, size);
+	    size = 0;
 	}
 
 	if (ret < 0)
@@ -190,7 +190,7 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
         }
     }
     mutex_unlock(&adl_dev->mx_nvmem);
-    return 0;
+    return ret;
 }
 
 struct kobj_attribute attr0 = __ATTR_RO(nvmemcap);

@@ -186,10 +186,10 @@ int WtLockUnlock(uint8_t * pDataIn_data,uint32_t Region);
 void delay(unsigned long int ticks);
 
 //Read
-int adl_bmc_ec_read_device(u8 addr, u8 *dest, int len, unsigned int Region);
+int adl_bmc_ec_read_device(u8 addr, u8 *dest, int len, unsigned int RegionIndex);
 
 //Write
-int adl_bmc_ec_write_device(u8 reg, u8 *source, int len, unsigned int Region);
+int adl_bmc_ec_write_device(u8 addr, u8 *src, int len, unsigned int RegionIndex);
 
 
 #define DEBUG 0

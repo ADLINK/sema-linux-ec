@@ -267,18 +267,18 @@ EXPORT_SYMBOL(adl_bmc_ec_write_device);
 
 static void CollectCapabilities(unsigned int *Capabilities, unsigned DataCount, unsigned char *CapData)
 {
-    unsigned char buff[8] = {0}, i;
+    unsigned char buff[8] = {0};
     adl_bmc_ec_read_device(ADL_BMC_OFS_CAPABILITIES, buff, 8, EC_REGION_1);
 
     if(Capabilities != NULL)
     {
-	for(i = 0; i < 8; i++)
-	{
-	    Capabilities[i/4] |= buff[i] << ((i%4) * 8);
-	    //printk("capability%d=%x\t", i, buff[i] );
-	}
+		int i;
+		for(i = 0; i < 8; i++)
+		{
+		    Capabilities[i/4] |= buff[i] << ((i%4) * 8);
+		    //printk("capability%d=%x\t", i, buff[i] );
+		}
     }
-
 }
 
 static int hello_proc_show(struct seq_file *m, void *v) {
@@ -319,10 +319,10 @@ int StatusCheck(void)
 
 static int ReadMem_bmc(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSize)
 {
-    unsigned char  i;
-    unsigned char pDataIn[] = { 0x2, 0x1, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };
-    
-    if(StatusCheck()!=0)
+
+   unsigned char pDataIn[] = { 0x2, 0x1, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };    
+   
+   	if(StatusCheck()!=0)
     {
 	return -1;	    
     }
@@ -333,6 +333,7 @@ static int ReadMem_bmc(unsigned char Region, unsigned int nAdr, u8* pData, unsig
 
 	if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
 	{
+    	unsigned char  i;
 	    for (i = 0; i < 100; i++)
 	    {
 		if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
@@ -355,7 +356,7 @@ static int ReadMem_bmc(unsigned char Region, unsigned int nAdr, u8* pData, unsig
 static int bmc_nvmem_read(unsigned int offset,void *val, size_t bytes)
 {
     size_t size;
-    int ret, i;
+    int ret = 0, i;
     size = bytes;
     
     if(val == NULL)
@@ -375,8 +376,8 @@ static int bmc_nvmem_read(unsigned int offset,void *val, size_t bytes)
 	else
 	{
 	    delay(200);
-	    ret = ReadMem_bmc(5, offset + i, (char*)(val + i), size);
-	    size -= size;		
+	    ret = ReadMem_bmc(5, offset + i, (char*)val + i, size);
+	    size = 0;		
 	}
 
 	if (ret < 0)
@@ -531,7 +532,6 @@ static int adl_ec_acpi_probe(struct platform_device *pdev)
 	//printk("Bmc_Capabilities(0x15) %x, hardware_monitor %x\n", adl_bmc_dev->Bmc_Capabilities[1], hardware_monitor);
 	
 	if(hardware_monitor==1){
-		int i=0;
 		for (i=0; i<8;i++)
 		{
 			
@@ -544,8 +544,6 @@ static int adl_ec_acpi_probe(struct platform_device *pdev)
 				printk("Error reading Hardware Monitor input string\n");
 				break;
 			}
-			
-			pData++;
 		}
 	}	
 	

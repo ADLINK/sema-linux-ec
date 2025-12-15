@@ -73,7 +73,7 @@ unsigned char Conv_IsHexDigit(char c);
 *		1 if String is valid hex string, otherwise 0
 ********************************************************************************
 **/
-unsigned char Conv_IsHexString(char *String);
+unsigned char Conv_IsHexString(const char *String);
 
 
 /**
@@ -125,7 +125,7 @@ unsigned char Conv_GetDigit(char c);
 *		Decimal value of the input
 ********************************************************************************
 **/
-unsigned char Conv_GetHex(char* buf);
+unsigned char Conv_GetHex(const char* buf);
 
 
 /**

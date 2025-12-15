@@ -82,7 +82,7 @@ static int read_ec(uint8_t reg){
 
 static int os_release(void)
 {
-    struct new_utsname *uts;
+    const struct new_utsname *uts;
 
     uts = &init_uts_ns.name;  // Access the system name information
     

@@ -42,7 +42,7 @@
 
 #define SEMA_VERSION_MAJOR 0x04
 #define SEMA_VERSION_MINOR 0x03
-#define SEMA_VERSION_ADDON 0x11
+#define SEMA_VERSION_ADDON 0x12
 #define SEMA_LIB_VERSION EAPI_VER_CREATE(SEMA_VERSION_MAJOR, SEMA_VERSION_MINOR, SEMA_VERSION_ADDON)
 
 
@@ -278,7 +278,7 @@ uint32_t EApiLibUnInitialize(void);
  * @param pBufLen	 Buffer length
  * @return 0 on success -1 on failure
  */
-uint32_t EApiBoardGetStringA(uint32_t Id, char *pBuffer, uint32_t *pBufLen);
+uint32_t EApiBoardGetStringA(uint32_t Id,char *pBuffer,const uint32_t *pBufLen);
 
 /**
  * @brief Function To Get information about the hardware platform in values.
@@ -317,7 +317,7 @@ uint32_t EApiBoardGetCurPosErrorLog (uint32_t *ErrorNumber, uint8_t  *Flags, uin
  * @brief Function To Get text information of the Error number in the error log.
  * @return 0 on success -1 on failure
  */
-uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos, char *pBuf, uint32_t size);
+uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos,char *pBuf, uint32_t size);
 
 /**
  * @brief Function To Get text information of the Exception code.
@@ -412,7 +412,7 @@ uint32_t EApiStorageAreaClear(uint32_t Id);
 
 uint32_t EApiStorageLock(uint32_t Id);
 
-uint32_t EApiStorageUnLock(uint32_t Id,uint32_t Permission, char *passcode);
+uint32_t EApiStorageUnLock(uint32_t Id,uint32_t Permission,const char *passcode);
 
 uint32_t EApiGUIDWrite(uint32_t Id, uint32_t Offset, void* pBuffer, uint32_t ByteCnt);
 

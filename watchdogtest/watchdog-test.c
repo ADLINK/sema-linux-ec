@@ -221,14 +221,17 @@ int main(int argc, char *argv[])
 			sprintf(sysfile, "/sys/class/watchdog/watchdog0/timeout");
 
 			fdd = open(sysfile, O_RDONLY);
-			if(fd < 0)
+			if(fdd < 0){
+				close(fd);
 				return -1;
+			}
 
 			ret = read(fdd, value, sizeof(value));
 			if (ret)
 				close(fdd);
 			else {
 				close(fdd);
+				close(fd);
 				return -1;
 			}
 			

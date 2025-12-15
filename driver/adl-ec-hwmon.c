@@ -70,7 +70,7 @@ static ssize_t show_fan_enable_temp_src(struct device *dev, struct device_attrib
 	unsigned char conf_data[32];
 	int i, size;
 	unsigned int value = 0, bmc_conf = 0;
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int fn = sensor_attr_2->nr;
 	int fan_num = sensor_attr_2->index;
@@ -142,7 +142,7 @@ static ssize_t set_fan_enable_temp_src(struct device *dev, struct device_attribu
 	unsigned int bmc_conf;
 	struct adl_bmc_hwmon_data *hwmon_data = dev_get_drvdata(dev);
 
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int fan_num = sensor_attr_2->index;
 	int fn = sensor_attr_2->nr;
@@ -258,8 +258,8 @@ static ssize_t show_fan_auto_point_temp(struct device *dev,
 		char *buf)
 {
 	u8 trig_temp[2];
-	int size;
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	int size = 0;
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int temp_index = sensor_attr_2->index;
 	int fan_num = sensor_attr_2->nr;
@@ -307,11 +307,11 @@ static ssize_t set_fan_auto_point_temp(struct device *dev,
 {
 	u8 trig_temp[2];
 	int err;
-	int size;
+	int size = 0;
 	long val;
 	struct adl_bmc_hwmon_data *hwmon_data = dev_get_drvdata(dev);
 
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int temp_index = sensor_attr_2->index;
 	int fan_num = sensor_attr_2->nr;
@@ -383,8 +383,8 @@ static ssize_t show_fan_auto_point_pwm(struct device *dev,
 		char *buf)
 {
 	u8 trig_pwm[2];
-	int size;
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	int size = 0;
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int pwm_index = sensor_attr_2->index;
 	int fan_num = sensor_attr_2->nr;
@@ -432,11 +432,11 @@ static ssize_t set_fan_auto_point_pwm(struct device *dev,
 {
 	u8 trig_pwm[2];
 	int err;
-	int size;
+	int size = 0;
 	unsigned long val;
 	struct adl_bmc_hwmon_data *hwmon_data = dev_get_drvdata(dev);
 
-	struct sensor_device_attribute_2 *sensor_attr_2 =
+	const struct sensor_device_attribute_2 *sensor_attr_2 =
 		to_sensor_dev_attr_2(attr);
 	int pwm_index = sensor_attr_2->index;
 	int fan_num = sensor_attr_2->nr;
@@ -547,7 +547,7 @@ static ssize_t show_fan_input(struct device *dev, struct device_attribute *attr,
 {
 	int ret;
 	unsigned char buff[32];
-	struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
+	const struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
 
 	unsigned short speed;
 	int ix = sensor_attr_2->index;
@@ -584,7 +584,7 @@ static ssize_t show_temp_input(struct device *dev, struct device_attribute *attr
 {
 	int ret;
 	uint8_t buff=0;
-	struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
+	const struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
 	unsigned short temper=0;
 
 	int ix = sensor_attr_2->index;
@@ -628,7 +628,7 @@ static ssize_t show_temp_input(struct device *dev, struct device_attribute *attr
 
 static ssize_t show_temp_min(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
+	const struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
 	int ix = sensor_attr_2->index;
 	int ret;
 	unsigned short temper = 0;
@@ -674,7 +674,7 @@ static ssize_t show_temp_min(struct device *dev, struct device_attribute *attr, 
 
 static ssize_t show_temp_max(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
+	const struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
 	int ix = sensor_attr_2->index;
 	int ret;
 	unsigned short temper = 0;
@@ -716,7 +716,7 @@ static ssize_t show_temp_max(struct device *dev, struct device_attribute *attr, 
 
 static ssize_t show_temp_startup(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
+	const struct sensor_device_attribute_2 *sensor_attr_2 = to_sensor_dev_attr_2(attr);
 	int ix = sensor_attr_2->index;
 	int ret;
 	unsigned short temper = 0;
@@ -830,7 +830,7 @@ static void adl_bmc_hwmon_remove_sysfs(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	int i;
-	struct adl_bmc_hwmon_data *hwmon_data;
+	const struct adl_bmc_hwmon_data *hwmon_data;
 	hwmon_data = platform_get_drvdata(pdev);
 
 

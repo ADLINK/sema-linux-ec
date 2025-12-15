@@ -46,7 +46,7 @@ static int first = 0;
 
 static int adl_bmc_bklight_update_status(struct backlight_device *bl)
 {
-	unsigned char brightness = 0;
+	char brightness = 0;
 	unsigned char buff[2];
 	int ret;
 

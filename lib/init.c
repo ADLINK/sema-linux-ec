@@ -26,7 +26,7 @@ int initialize_gpio(void);
 
 uint32_t EApiLibInitialize(void)
 {
-	char res[128];
+	char res[128] = {0};
 	char sysfile[128];
 	volatile int ret;
 

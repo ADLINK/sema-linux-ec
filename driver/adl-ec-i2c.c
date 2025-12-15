@@ -73,7 +73,6 @@
 
 #define DEBUG_I2C 0
 
-int eapi_read_transaction(void);
 struct adlink_i2c_dev {
     struct device 		*dev;
     struct i2c_adapter 	adapter1;
@@ -92,7 +91,6 @@ struct eapi_txn {
     unsigned char tBuffer[50];
 };
 
-struct eapi_txn buf;
 struct mutex i2c_lock;
 
 static int open(struct inode *inode, struct file *file)
@@ -195,7 +193,7 @@ int ProbeDevice(struct eapi_txn *trxn)
 		return -1;
 	}
 
-	if (adl_bmc_ec_write_device(EC_WO_ADDR_IIC_CMD_START, buf.tBuffer, 6, EC_REGION_2) != 0)
+	if (adl_bmc_ec_write_device(EC_WO_ADDR_IIC_CMD_START, trxn->tBuffer, 6, EC_REGION_2) != 0)
 	{
 		return -1;
 	}
@@ -211,27 +209,27 @@ int ProbeDevice(struct eapi_txn *trxn)
 		return -1;
 	}
 
-	buf.tBuffer[1] = Status;
+	trxn->tBuffer[1] = Status;
 
 	if (adl_bmc_ec_read_device(EC_RO_ADDR_IIC_TXN_STATUS, &Status, 1, EC_REGION_2) != 0)
 	{
 		return -1;
 	}
 
-	buf.tBuffer[0] = Status;
+	trxn->tBuffer[0] = Status;
 
 	return 0;
 }
 
 
-int eapi_read_transaction()
+int eapi_read_transaction(struct eapi_txn *trxn)
 {
 	u8 buffer[32];
 	unsigned char Status;
 	int i;
 #if DEBUG_I2C
 	for (i=0; i<20; i++)
-	   printk("%x ", buf.tBuffer[i]);
+	   printk("%x ", trxn->tBuffer[i]);
 	printk("\n");
 #endif
 
@@ -250,12 +248,12 @@ int eapi_read_transaction()
 	}
 
 	//3. Update the datas
-	buffer[0] = buf.tBuffer[0]; //I/F type 0x11
-	buffer[1] = buf.tBuffer[1] ; //I2C R/W CMD 0x12
-	buffer[2] = buf.tBuffer[2]; //I2C Length 0x13
-	buffer[3] = buf.tBuffer[3]; //I2C Channel 0x14
+	buffer[0] = trxn->tBuffer[0]; //I/F type 0x11
+	buffer[1] = trxn->tBuffer[1] ; //I2C R/W CMD 0x12
+	buffer[2] = trxn->tBuffer[2]; //I2C Length 0x13
+	buffer[3] = trxn->tBuffer[3]; //I2C Channel 0x14
 	buffer[4] = 0x0; //Reserved 0x15
-	buffer[5] = buf.tBuffer[5]; //I2C address 0x16
+	buffer[5] = trxn->tBuffer[5]; //I2C address 0x16
         if (adl_bmc_ec_write_device(EC_WO_ADDR_IIC_CMD_START, buffer, 6, EC_REGION_2) != 0)
         {
 		return -1;
@@ -267,7 +265,7 @@ int eapi_read_transaction()
 		return -1;
 	}
 	
-	BMC_DELAY(buf.Length);
+	BMC_DELAY(trxn->Length);
 	
     	//5. Checking the I2C status 
  	if((check_bmc_status(&Status, 10000)) == 0)
@@ -283,7 +281,7 @@ int eapi_read_transaction()
     	}
 
 	//6. Read EC Data
-	if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BUFFER, buffer, buf.Length, EC_REGION_2) != 0)
+	if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BUFFER, buffer, trxn->Length, EC_REGION_2) != 0)
        	{
 		return -1;
 	}
@@ -292,7 +290,7 @@ int eapi_read_transaction()
 	for (i=0;i<10;i++)
 		printk("%x ",buffer[i]);
 #endif
-	memcpy(buf.tBuffer, buffer, buf.Length);
+	memcpy(trxn->tBuffer, buffer, trxn->Length);
 #if DEBUG_I2C	
 	printk("---%s---\n", __func__);
 #endif
@@ -368,10 +366,10 @@ int eapi_rw_transaction(struct eapi_txn *trxn)
 
     buffer[0] = EC_IIC_TRANS;
     buffer[1] = EC_IIC_TYPE_STREAM_RW;
-    buffer[2] = buf.tBuffer[3];
-    buffer[3] = buf.tBuffer[5];
-    buffer[4] = buf.tBuffer[6];
-    buffer[5] = buf.tBuffer[2];
+    buffer[2] = trxn->tBuffer[3];
+    buffer[3] = trxn->tBuffer[5];
+    buffer[4] = trxn->tBuffer[6];
+    buffer[5] = trxn->tBuffer[2];
     
     adl_bmc_ec_write_device(EC_RW_ADDR_IIC_IF_TYPE,&(buffer[0]),1,EC_REGION_2); 
     adl_bmc_ec_write_device(EC_RW_ADDR_IIC_RW_TYPE,&(buffer[1]),1,EC_REGION_2); 
@@ -414,7 +412,7 @@ int eapi_rw_transaction(struct eapi_txn *trxn)
 	return -ENODEV;
     }
     
-    memcpy(buf.tBuffer, buffer, trxn->Length);
+    memcpy(trxn->tBuffer, buffer, trxn->Length);
     return 0;
 }
 
@@ -423,7 +421,7 @@ int bmc_i2c_status(struct eapi_txn *trxn)
 	unsigned char Status;
 	if (adl_bmc_ec_read_device(EC_RO_ADDR_IIC_TXN_STATUS, &Status, 1, EC_REGION_2) == 0)
 	{
-		buf.tBuffer[0] = Status;
+		trxn->tBuffer[0] = Status;
 		return 0;
 	}
 
@@ -433,6 +431,7 @@ int bmc_i2c_status(struct eapi_txn *trxn)
 long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 {
 	int RetVal;
+	struct eapi_txn buf;
 
        	if((RetVal=copy_from_user(&buf, (void*)data, sizeof(struct eapi_txn)))!=0)
 	{
@@ -442,7 +441,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 	switch(cmd)
 	{
 		case PROBE_DEV:
-			if(ProbeDevice((struct eapi_txn*)data) == 0)
+			if(ProbeDevice(&buf) == 0)
 			{
 				if(copy_to_user((void*)data, &buf, sizeof(struct eapi_txn))!=0)
 				{
@@ -457,7 +456,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 		case EAPI_TRXN: 
 			if (buf.Type == SEMA_EXT_IIC_READ)
 			{		
-				if(eapi_read_transaction() < 0 )
+				if(eapi_read_transaction(&buf) < 0 )
 				{
 					mutex_unlock(&i2c_lock);
 					return -1;
@@ -487,7 +486,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 			}
 			break;
 		case BMC_I2C_STS:
-			bmc_i2c_status((struct eapi_txn*)data);
+			bmc_i2c_status(&buf);
 			if(copy_to_user((void*)data, &buf, sizeof(struct eapi_txn))!=0)
 			{
 				mutex_unlock(&i2c_lock);
@@ -686,6 +685,7 @@ static int adlink_i2c_xfer_bus(struct i2c_adapter *adap, struct i2c_msg *msgs, i
     	int bus = 0;
     	uint8_t Address = 0;
     	uint8_t prev = 0;
+	struct eapi_txn buf;
 	const char* adapter_name = (const char *)adap->name;
     	Address = SLAVE_ADDR(msgs->addr);
 

@@ -42,8 +42,6 @@ struct gpiostruct{
 };
 
 int flag;
-struct gpiostruct data;
-int gpio_ret,gpionum;
 
 static int adl_gpio_get(struct gpio_chip *chip, unsigned int offset)
 {
@@ -53,32 +51,42 @@ static int adl_gpio_get(struct gpio_chip *chip, unsigned int offset)
 	if(offset >= 0x08)
 	{
 		ret= adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+		if (ret < 0)
+        		return ret;
+
 		cap=cap & (1<<4);
 	}
 
 	if(cap!=0)
        	{
-		u8 offset_ext;
-       	    	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_IN_PORT_EXT, &gpio_in, 1, EC_REGION_1); 
-           	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1); 
-            	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+		u8 offset_ext = offset - 8;
 
-		 gpio_in = (dir & gpio_in) | (~dir & gpio_out);
-		 offset_ext=offset-8;
-		 return !!(gpio_in & (1 << offset_ext));
+      		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_IN_PORT_EXT, &gpio_in, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
 
+        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
 
+        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
+
+        	gpio_in = (dir & gpio_in) | (~dir & gpio_out);
+        	return !!(gpio_in & (1 << offset_ext));
         }
 	else
 	{
-        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_IN_PORT, &gpio_in, 1, EC_REGION_1); 
-        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT, &gpio_out, 1, EC_REGION_1); 
-		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		
-		gpio_in = (dir & gpio_in) | (~dir & gpio_out);
-		return !!(gpio_in & (1 << offset));
-	}
+       		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_IN_PORT, &gpio_in, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
 
+        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT, &gpio_out, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
+
+        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
+        	if (ret < 0) return ret;
+
+        	gpio_in = (dir & gpio_in) | (~dir & gpio_out);
+        	return !!(gpio_in & (1 << offset));
+	}
 }
 
 static void adl_gpio_set(struct gpio_chip *chip, unsigned int offset,
@@ -90,36 +98,41 @@ static void adl_gpio_set(struct gpio_chip *chip, unsigned int offset,
 	if(offset >= 0x08)
         {
                 ret= adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+		if (ret < 0)
+        		return;
+
                 cap=cap & (1<<4);
         }
 
 	if(cap!=0)
 	{
-		u8 offset_ext;
-		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1);
-		
-		offset_ext=offset-8;
-		
-		if (value == 1)
-                        gpio_out = gpio_out | (1 << offset_ext);
-                else
-                        gpio_out = gpio_out & ~(1 << offset_ext);
-		
-		adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1);
+		u8 offset_ext = offset - 8;
+
+      	        ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return;
+
+       
+	        if (value)
+            		gpio_out |= (1 << offset_ext);
+        	else
+            		gpio_out &= ~(1 << offset_ext);
+
+        	adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_OUT_PORT_EXT, &gpio_out, 1, EC_REGION_1);
 	}
         else
 	{
-      		
 		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_OUT_PORT, &gpio_out, 1, EC_REGION_1);
-		
-	       	if (value == 1)
-                        gpio_out = gpio_out | (1 << offset);
-                else
-                        gpio_out = gpio_out & ~(1 << offset);
-	
-       		adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_OUT_PORT, &gpio_out, 1, EC_REGION_1);
-	}
+       	 	if (ret < 0)
+            		return;
 
+        	if (value)
+            		gpio_out |= (1 << offset);
+        	else
+            		gpio_out &= ~(1 << offset);
+
+        	adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_OUT_PORT, &gpio_out, 1, EC_REGION_1);
+	}
 }
 
 static int adl_gpio_direction_input(struct gpio_chip *gc,
@@ -131,31 +144,37 @@ static int adl_gpio_direction_input(struct gpio_chip *gc,
 	if(nr >= 0x08)
         {
                 ret= adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+		if (ret < 0)
+        		return ret;
                 cap=cap & (1<<4);
         }
 
 	if(cap!=0)
 	{
-		u8 nr_ext;
-        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
-		
-		nr_ext=nr-8;
-		
-		dir=dir|(1 << nr_ext);
-		
-		adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+		u8 nr_ext = nr - 8;
 
+       		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
+
+        	dir |= (1 << nr_ext);
+        	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
 	}
 	else
 	{
  		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		
-	       	dir = dir | (1 << nr);
-	
-	       	adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
+      	  	if (ret < 0)
+            		return ret;
+
+        	dir |= (1 << nr);  
+	        
+		ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
 	}
 	return 0;
-
 }
 
 static int adl_gpio_direction_output(struct gpio_chip *gc,
@@ -167,30 +186,40 @@ static int adl_gpio_direction_output(struct gpio_chip *gc,
 	if(nr >= 0x08)
         {
                 ret= adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+		if (ret < 0)
+        		return ret;
+
                 cap=cap & (1<<4);
         }
 
 	if(cap!=0){
-		u8 nr_ext;
-		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
-		
-		nr_ext=nr-8;
-		dir=dir & ~(1 << nr_ext);
-	
-		adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
-	
-		adl_gpio_set(gc,  nr_ext, 0);
+		u8 nr_ext = nr - 8;
 
+       	 	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
+
+        	dir &= ~(1 << nr_ext);
+
+        	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
+
+        	adl_gpio_set(gc, nr_ext, 0);
 	}
 	else
 	{
 		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		
-		dir = dir & ~(1 << nr);
-		
-		adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		
-		adl_gpio_set(gc,  nr, 0);
+        	if (ret < 0)
+            		return ret;
+
+        	dir &= ~(1 << nr);
+
+        	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
+
+        	adl_gpio_set(gc, nr, 0);
 	}
 
 	return 0;
@@ -204,21 +233,35 @@ static int adl_gpio_get_direction(uint32_t* value)
 {
 	uint8_t dir,cap = 0;
 	int ret;
+	*value = 0;
+
 	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+	if (ret < 0)
+	       return ret;
+
         cap = cap & (1<<4);
 	
 	if(cap!=0)
 	{
 		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR_EXT, &dir, 1, EC_REGION_1);
-		*value |= (dir & 0x0F);
-		*value <<= 8;
-		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		*value |= dir;
+        	if (ret < 0)
+            		return ret;
+
+        	*value = ((uint32_t)dir << 8);
+
+        	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
+        	if (ret < 0)
+            		return ret;
+
+        	*value |= dir;
 	}
 	else
 	{
 		ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_DIR, &dir, 1, EC_REGION_1);
-		*value |= dir;
+        	if (ret < 0)
+            		return ret;
+
+        	*value = dir;
 	}
 	return 0;
 }
@@ -268,21 +311,19 @@ int release(struct inode *inode, struct file *file)
 
 static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 {
-	int RetVal;
+	int ret,gpionum;
 	uint32_t gpio_dir;
+	struct gpiostruct data;
+
 	switch(cmd)
         {
                 case GET_GPIO_DIR:
                 {
+                        ret = adl_gpio_get_direction(&gpio_dir);
+			if (ret < 0)
+            			return ret;
 
-                        if((RetVal = copy_from_user(&gpio_dir,(uint32_t *)arg,sizeof(gpio_dir)))!=0)
-                        {
-                                return -EFAULT;
-                        }
-
-                        RetVal=adl_gpio_get_direction(&gpio_dir);
-
-                        if((RetVal = copy_to_user((uint32_t *) arg,&gpio_dir,sizeof(gpio_dir)))!=0)
+                        if(copy_to_user((uint32_t *) arg,&gpio_dir,sizeof(gpio_dir))!=0)
                         {
                                 return -EFAULT;
                         }
@@ -290,12 +331,16 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
                 break;
 		case GET_LEVEL:
 		{
-			if((RetVal = copy_from_user(&gpionum, (int32_t *) arg, sizeof(gpionum)))!=0)
+			if(copy_from_user(&gpionum, (int32_t *) arg, sizeof(gpionum))!=0)
 			{
 				return -EFAULT;
 			}
-               		gpio_ret =adl_gpio_get(NULL,gpionum);
-			if((RetVal=copy_to_user((int32_t *) arg, &gpio_ret, sizeof(gpio_ret)))!=0)
+
+               		ret = adl_gpio_get(NULL,gpionum);
+			if (ret < 0)
+            			return ret;
+
+			if(copy_to_user((int32_t *) arg, &ret, sizeof(ret))!=0)
 			{
 				return -EFAULT;
 			}
@@ -303,7 +348,7 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 		break;
                 case SET_LEVEL:
 		{
-			if((RetVal = copy_from_user(&data, (struct gpiostruct *) arg, sizeof(data)))!=0)
+			if(copy_from_user(&data, (struct gpiostruct *) arg, sizeof(data))!=0)
 			{
 				return -EFAULT;
 			}
@@ -312,20 +357,24 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 		break;
 		case OP_DIRECTION :
 		{
-			if((RetVal = copy_from_user(&data, (struct gpiostruct *) arg, sizeof(data)))!=0)
+			if(copy_from_user(&data, (struct gpiostruct *) arg, sizeof(data))!=0)
 			{
 				return -EFAULT;
 			}
-			adl_gpio_direction_output(NULL,data.gpio, data.val);
+			ret = adl_gpio_direction_output(NULL,data.gpio, data.val);
+			if (ret < 0)
+            			return ret;
 		}
 		break;
 		case IN_DIRECTION :
 		{
-			if((RetVal = copy_from_user(&gpionum, (int32_t *) arg, sizeof(gpionum)))!=0)
+			if(copy_from_user(&gpionum, (int32_t *) arg, sizeof(gpionum))!=0)
 			{
 				return -EFAULT;
 			}
-			adl_gpio_direction_input(NULL,gpionum);
+			ret = adl_gpio_direction_input(NULL,gpionum);
+			if (ret < 0)
+            			return ret;
 		}
 		break;
                 default:
@@ -384,6 +433,9 @@ static int adl_ec_gpio_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	
 	ret= adl_bmc_ec_read_device(ADL_BMC_OFS_GPIO_CAP, &cap, 1,EC_REGION_1);
+	if (ret < 0)
+        	return ret;
+
         cap=cap & (1<<4);
 	
 	if(cap==0)

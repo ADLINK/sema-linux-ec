@@ -176,7 +176,7 @@ static int WriteMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned
 
 int ReadODMMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSize)
 {
-    unsigned char  i;     
+     
     unsigned char pDataIn[] = { 0x2, 0x1, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };
     
     if(StatusCheck()!=0)
@@ -190,6 +190,7 @@ int ReadODMMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int 
 
         if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
         {
+    	    unsigned char  i;     
             for (i = 0; i < 100; i++)
             {
                 if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
@@ -217,7 +218,7 @@ int ReadODMMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int 
 
 int WriteODMMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSize)
 {
-    unsigned char  i;
+   
     unsigned char pDataIn[] = { 0x2, 0x2, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };
     
     if(StatusCheck() != 0)
@@ -232,6 +233,7 @@ int WriteODMMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int
             pDataIn[0] = 4;
             if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
             {
+    		unsigned char  i;
                 for (i = 0; i < 100; i++)
                 {
                     if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
@@ -285,9 +287,9 @@ static int adl_bmc_nvmem_read(void *context, unsigned int offset, void *val, siz
 	{
 	    delay(200);
 	    if(region==2)
-	    ret = ReadMem(region, offset + i, (char*)(val + i), 32);
+	    ret = ReadMem(region, offset + i, (char*)val + i, 32);
 	    else
-	    ret = ReadODMMem(region, offset + i, (char*)(val + i), 32);
+	    ret = ReadODMMem(region, offset + i, (char*)val + i, 32);
 
 	    size -= 32;
 	}
@@ -295,11 +297,10 @@ static int adl_bmc_nvmem_read(void *context, unsigned int offset, void *val, siz
 	{
 	    delay(200);
 	    if(region==2)
-	    ret = ReadMem(region, offset + i, (char*)(val + i), size);
+	    ret = ReadMem(region, offset + i, (char*)val + i, size);
 	    else
-	    ret = ReadODMMem(region, offset + i, (char*)(val + i), size);	    
-
-	    size -= size;
+	    ret = ReadODMMem(region, offset + i, (char*)val + i, size);	    
+	    size = 0;
 	}
 
 	if (ret < 0)
@@ -345,16 +346,16 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
 		{
 			delay(200);
 			if(region==2)
-				ret = WriteMem(region, offset + i, (char*)(val + i), 32);
+				ret = WriteMem(region, offset + i, ((char *)val) + i, 32);
 			else
-				ret = WriteODMMem(region, offset + i, (char*)(val + i), 32);
+				ret = WriteODMMem(region, offset + i, ((char *)val) + i, 32);
 			size -= 32;
 		}
 		else
 		{
 			delay(200);
 			if(region==2)
-				ret = WriteMem(region, offset + i, (char*)(val + i), size);
+				ret = WriteMem(region, offset + i, ((char *)val) + i, size);
 			else
 			{
 				if(size < 16)
@@ -364,7 +365,7 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
 					ret = WriteODMMem(region, offset + i, data, 16);
 				}
 				else
-					ret = WriteODMMem(region, offset + i, (char*)(val + i), size);
+					ret = WriteODMMem(region, offset + i, ((char *)val) + i, size);
 			}
 
 			size -= size;
@@ -378,7 +379,7 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
 	}
 
 	mutex_unlock(&adl_dev->mx_nvmem);
-	return 0;
+	return ret;
 }
 
 struct kobj_attribute attr0 = __ATTR_RO(nvmemcap);
@@ -393,7 +394,7 @@ static struct nvmem_config adl_bmc_nvmem_config = {
 };
 
 
-static int adl_bmc_nvmem_lock(struct secure *data)
+static int adl_bmc_nvmem_lock(const struct secure *data)
 {
     uint8_t pDataIn_data[3] = { 0xAD, 0xEC, 0x0 };
 
@@ -423,7 +424,7 @@ static int adl_bmc_nvmem_lock(struct secure *data)
 }
 
 
-static int adl_bmc_nvmem_unlock(struct secure *data)
+static int adl_bmc_nvmem_unlock(const struct secure *data)
 {
     uint8_t pDataIn_data[16] = { 0xAD, 0xEC, 0x7 };
 
@@ -494,8 +495,8 @@ static int release(struct inode *inode, struct file *file)
 
 long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 {
-	int RetVal;
-	if((RetVal=copy_from_user(&buffer, (void*)data, sizeof(struct secure)))!=0)
+
+	if(copy_from_user(&buffer, (void*)data, sizeof(struct secure))!=0)
 	{
 	   return EFAULT;
 	}
@@ -506,7 +507,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 	    {
 		    return -EINVAL;
 	    }
-          if((RetVal=copy_to_user((void*)data, &buffer, sizeof(struct secure)))!=0)
+          if(copy_to_user((void*)data, &buffer, sizeof(struct secure))!=0)
 	    {
 	            return EFAULT;
 	    }
@@ -517,7 +518,7 @@ long ioctl(struct file *file, unsigned int cmd, unsigned long data)
 	    {
 		    return -EINVAL;
 	    }
-            if((RetVal=copy_to_user((void*)data, &buffer, sizeof(struct secure)))!=0)
+            if(copy_to_user((void*)data, &buffer, sizeof(struct secure))!=0)
    	    {
 		    return EFAULT;
             }

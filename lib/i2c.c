@@ -125,14 +125,12 @@ uint32_t EApiI2CReadTransfer(uint32_t Id, uint32_t Addr, uint32_t Cmd, void* pBu
 
 	if((fd = open("/dev/ec-i2c-eapi", O_RDWR)) < 0)
 	{
-		
 		return EAPI_STATUS_READ_ERROR;
 	}
-		trxn.Type = SEMA_EXT_IIC_BLOCK;
 
 #if 1	
 	//check whether 2 byte command
-        if	(Cmd & (2 << 30))
+        if(Cmd & (2 << 30))
 	{
 	    write_data[0] = Cmd & 0xff;
 	    write_data[1] = (Cmd >> 8) & 0xff;
@@ -223,7 +221,6 @@ uint32_t EApiI2CWriteTransfer(uint32_t Id, uint32_t Addr, uint32_t Cmd, void *pB
 
 	if((fd = open("/dev/ec-i2c-eapi", O_RDWR)) < 0)
 	{
-		
 		return EAPI_STATUS_READ_ERROR;
 	}
 
@@ -283,12 +280,10 @@ uint32_t EApiI2CGetBusCap(uint32_t Id, uint32_t *pMaxBlkLen)
 	int fd = open("/sys/bus/platform/devices/adl-ec-boardinfo/information/capabilities", O_RDONLY);
 	if(fd < 0)
 	{
-		
 		return EAPI_STATUS_READ_ERROR;
 	}
 
 	char buffer[10] = {0};
-
 
 	uint32_t m_nSemaCaps;
 	if(read(fd, buffer, 10) < 0)
@@ -331,7 +326,6 @@ uint32_t EApiI2CGetBusCap(uint32_t Id, uint32_t *pMaxBlkLen)
 				return EAPI_STATUS_SUCCESS;
 			}
 			break;
-
 		default:
 			*pMaxBlkLen = 0;
 			close(fd);
@@ -356,7 +350,6 @@ uint32_t EApiI2CGetBusSts(uint32_t Id, uint8_t *Bus_Sts)
 
 	if((fd = open("/dev/ec-i2c-eapi", O_RDWR)) < 0)
 	{
-		
 		return EAPI_STATUS_UNSUPPORTED;
 	}
 
@@ -396,7 +389,6 @@ uint32_t EApiI2CProbeDevice(uint32_t Id, uint32_t Addr)
 
 	if((fd = open("/dev/ec-i2c-eapi", O_RDWR)) < 0)
 	{
-		
 		return EAPI_STATUS_READ_ERROR;
 	}
 
@@ -477,7 +469,6 @@ uint32_t EApiI2CWriteReadRaw(uint32_t Id, uint8_t Addr, void *pWBuffer, uint32_t
 	memset(trxn.tBuffer, 0, sizeof(unsigned char) * 50);
         if((fd = open("/dev/ec-i2c-eapi", O_RDWR)) < 0)
         {
-		
                 return EAPI_STATUS_READ_ERROR;
         }
         trxn.tBuffer[0] = 0x4;      /*IF TYPE*/
@@ -496,7 +487,7 @@ uint32_t EApiI2CWriteReadRaw(uint32_t Id, uint8_t Addr, void *pWBuffer, uint32_t
         /*Writing the data based on write byte count*/
         for (i = 0; i < WriteBCnt; i++) {
         	trxn.tBuffer[i + 7] = ((unsigned char*)pWBuffer)[i];
-        	}
+        }
 
 	trxn.Type = SEMA_EXT_IIC_WRITE_READ;
 	if(ioctl(fd, EAPI_TRXN, &trxn) < 0)

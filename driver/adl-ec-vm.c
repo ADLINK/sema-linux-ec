@@ -62,11 +62,6 @@ static int adl_bmc_vm_get_voltage(struct data *vm)
 	return 0;
 }
 
-static struct regulator_init_data adl_bmc_initdata = {
-	.constraints = {
-		.always_on = 1,
-	},
-};
 
 int open(struct inode *inode, struct file *file)
 {
@@ -91,18 +86,21 @@ int release(struct inode *inode , struct file *file)
 static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 {
 	struct data vm;
-	int RetVal,Cap;
 	
 	switch(cmd)
 	{
 		case GET_VOLT_AND_DESC:
 		{
-			if((RetVal = copy_from_user(&vm,(struct data *)arg,sizeof(vm)))!=0)
+			int ret;
+			if(copy_from_user(&vm,(struct data *)arg,sizeof(vm))!=0)
 			{
 				return -EFAULT;
 			}
-			RetVal=adl_bmc_vm_get_voltage(&vm);
-			if((RetVal = copy_to_user((struct data*) arg,&vm,sizeof(vm)))!=0)
+			ret=adl_bmc_vm_get_voltage(&vm);
+			if (ret < 0)
+            	return ret;
+			
+			if(copy_to_user((struct data*) arg,&vm,sizeof(vm))!=0)
 			{
 				return -EFAULT;
 			}
@@ -110,12 +108,8 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 		break;
 		case GET_VOLT_MONITOR_CAP:
 		{
-			if((RetVal = copy_from_user(&Cap,(uint8_t *)arg,sizeof(Cap)))!=0)
-			{
-				return -EFAULT;
-			}
 			
-			if((RetVal = copy_to_user((uint8_t *)arg,&vm_cap,sizeof(vm_cap)))!=0)
+			if(copy_to_user((uint8_t *)arg,&vm_cap,sizeof(vm_cap))!=0)
 			{
 				return -EFAULT;
 			}
@@ -137,7 +131,6 @@ struct file_operations fops={
 static int adl_bmc_vm_probe(struct platform_device *pdev)
 {
 	int i;
-	struct regulator_config config = { };
 	struct device *dev = &pdev->dev;
 	struct adl_bmc_vm_data *vm_data;
 	
@@ -187,11 +180,6 @@ static int adl_bmc_vm_probe(struct platform_device *pdev)
 		debug_printk("Voltage monitor is not compatible for this platform\n");
 		return -EINVAL;
 	}
-
-	config.dev = &pdev->dev;
-	config.driver_data = vm_data;
-	config.init_data = &adl_bmc_initdata;
-
 	debug_printk("probing....................\n");
 
 	for (i = 0; i < ADL_MAX_HW_MTR_INPUT; i++)

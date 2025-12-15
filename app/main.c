@@ -26,7 +26,7 @@
 #include <eapi.h>
 #include <uuid/uuid.h>
 
-#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_11_25_10_17"
+#define Version	"ADLINK-SEMA-EC-LINUX-V4_R3_12_25_12_15"
 
 char*			ExeName;
 uint8_t	SetWatchdog, TriggerWatchdog, StopWatchdog, WatchDogCap,IsPwrUpWDogStart, IsPwrUpWDogStop;
@@ -120,9 +120,9 @@ unsigned GetStringMap[17] = {
 	EAPI_SEMA_ID_BOARD_2ND_SERIAL_STR,
 };
 
-unsigned int string_to_hex(char *string)
+unsigned int string_to_hex(const char *string)
 {
-	int data = 0;
+	unsigned int data = 0;
 	if (string != NULL)
 	{
 		sscanf(string, "%x", &data);
@@ -404,27 +404,25 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 {
 	int ret  = 0;
 	/* Board information*/
-	uint32_t Id, Size,permission, Value, ODM_Id= 0;
-	char *passcode;
+	uint32_t Id, Size,permission, Value;
 	char BoardInfo[64];
 	char ExcepDesc[1024];
 	memset(BoardInfo, 0, sizeof(BoardInfo));			
 	memset(ExcepDesc, 0, sizeof(ExcepDesc));
-	uint8_t ExceptionCode;
 	uint32_t Pos, ErrorNumber = 0;
 	uint8_t  Flags[20], RestartEvent[20], BiosSel;
 	uint32_t PwrCycles, Bootcount, Time, TotalOnTime;
 	uint8_t Status[20] = {0};
 	signed char CPUtemp[20] = {0}, Boardtemp[20] = {0};
 	/*Voltage Monitor*/
-	uint32_t Vid, Voltage;
+	uint32_t Voltage;
 	char Vmbuf[32];
 	memset(Vmbuf, 0, sizeof(Vmbuf));				
 	/* Backlight */
 	uint32_t bid, enable;
 	uint32_t brightness;
 	/* Watchdog */
-	uint32_t MaxDelay, MaxEventTimeout, MaxResetTimeout, delay, EventTimeout, ResetTimeout;
+	uint32_t MaxDelay, MaxEventTimeout, MaxResetTimeout, ResetTimeout;
 	/* Fan */
 	int fid = 0, Level1, Level2, Level3, Level4, Tempsrc, fan_mode, sts;
 	/* Storage */
@@ -434,19 +432,17 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 	uint32_t Storagesize = 0, BlockLength = 0;
 
 	char* FormatNumber(uint32_t number) {
-
 		char buffer[9];
-		char* result = (char*)malloc(9 * sizeof(char)); // Allocate memory for result
+    		char* result = malloc(9);
+    		if (!result)
+        		return NULL;
 
-		snprintf(buffer, sizeof(buffer), "%08X", number);
+    		snprintf(buffer, sizeof(buffer), "%08X", number);
 
-		char part1[2] = { buffer[1], '\0' };
-		char part2[2] = { buffer[3], '\0' };
-		char part3[3] = { buffer[6], buffer[7], '\0' };
+    		snprintf(result, 9, "%c.%c.%c%c",
+             		buffer[1], buffer[3], buffer[6], buffer[7]);
 
-		snprintf(result, 9, "%s.%s.%s", part1, part2, part3);
-
-		return result;	
+    		return result;
 	}
 	// Library Initializing
 	ret = EApiLibInitialize();
@@ -557,7 +553,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		char* Extvalues[15] = {};
 		Extvalues[2] = NULL;
 		char* BoardBMCFlag[3] = { "Exception code", "Mode", "BIOS" };
-		char* formattedNum;
+		const char* formattedNum;
 		int i;
 		switch(Id){
 			case EAPI_ID_GET_EAPI_SPEC_VERSION:
@@ -565,10 +561,10 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nEAPI Specification Version: %s\n\n", formattedNum);
 				break;
 			case EAPI_ID_BOARD_BOOT_COUNTER_VAL:
-				printf("\nBoot counter: %d\n\n", Value);
+				printf("\nBoot counter: %u\n\n", Value);
 				break;
 			case EAPI_ID_BOARD_RUNNING_TIME_METER_VAL:
-				printf("\nRunning Time Meter: %d minutes\n\n", Value);
+				printf("\nRunning Time Meter: %u minutes\n\n", Value);
 				break;
 			case EAPI_ID_BOARD_LIB_VERSION_VAL:
 				formattedNum = FormatNumber(Value);
@@ -581,34 +577,34 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nBoard Temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_VCORE:
-				printf("\nCPU Core Voltage: %d mV\n\n", Value);
+				printf("\nCPU Core Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_2V5:
-				printf("\n2.5V Voltage: %d mV\n\n", Value);
+				printf("\n2.5V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_3V3:
-				printf("\n3.3V Voltage: %d mV\n\n", Value);
+				printf("\n3.3V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_VBAT:
-				printf("\nBattery Voltage: %d mV\n\n", Value);
+				printf("\nBattery Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_5V:
-				printf("\n5V Voltage: %d mV\n\n", Value);
+				printf("\n5V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_5VSB:
-				printf("\n5V Standby Voltage: %d mV\n\n", Value);
+				printf("\n5V Standby Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_VOLTAGE_12V:
-				printf("\n12V Voltage: %d mV\n\n", Value);
+				printf("\n12V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_FAN_CPU:
-				printf("\nCPU Fan speed: %d RPM\n\n", Value);
+				printf("\nCPU Fan speed: %u RPM\n\n", Value);
 				break;
 			case EAPI_ID_HWMON_FAN_SYSTEM:
-				printf("\nSystem Fan 1 speed: %d RPM\n\n", Value);
+				printf("\nSystem Fan 1 speed: %u RPM\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_BOARD_POWER_UP_TIME:
-				printf("\nBoard powerup time: %d seconds\n\n", Value);
+				printf("\nBoard powerup time: %u seconds\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_BOARD_RESTART_EVENT:
 				printf("\nRestart event: 0x%X\n\n", Value);
@@ -733,25 +729,25 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nCPU startup temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_MAIN_CURRENT:
-				printf("\nMain power current: %d mA\n\n", Value);
+				printf("\nMain power current: %u mA\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_VOLTAGE_GFX_VCORE:
-				printf("\nGFX Voltage: %d mV\n\n", Value);
+				printf("\nGFX Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_VOLTAGE_1V05:
-				printf("\n1.05V Voltage: %d mV\n\n", Value);
+				printf("\n1.05V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_VOLTAGE_1V5:
-				printf("\n1.5V Voltage: %d mV\n\n", Value);
+				printf("\n1.5V Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_VOLTAGE_VIN:
-				printf("\nVin Voltage: %d mV\n\n", Value);
+				printf("\nVin Voltage: %u mV\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_2:
-				printf("\nSystem Fan 2 speed: %d RPM\n\n", Value);
+				printf("\nSystem Fan 2 speed: %u RPM\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_HWMON_FAN_SYSTEM_3:
-				printf("\nSystem Fan 3 speed: %d RPM\n\n", Value);
+				printf("\nSystem Fan 3 speed: %u RPM\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_BOARD_2ND_SYSTEM_TEMP:
 				printf("\nBoard 2nd Current temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
@@ -766,7 +762,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nBoard 2nd startup temperature:  %u K (%d C)\n\n",Value, (char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			case EAPI_SEMA_ID_BOARD_POWER_CYCLE:
-				printf("\nPower cycle counter: %d\n\n", Value);
+				printf("\nPower cycle counter: %u\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_BOARD_BMC_FLAG:
 				printf("\nBMC Flag:");
@@ -775,7 +771,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 					if (i == 0)
 					{
 						uint32_t deciVal = Value & 0x11111;
-						char* opstring;
+						const char* opstring;
 						switch (deciVal)
 						{
 							case 0:
@@ -885,7 +881,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nBoard BMC Status: 0x%X\n\n", Value);
 				break;
 			case EAPI_SEMA_ID_IO_CURRENT:
-				printf("\nIO Current: %d mA\n\n",Value);
+				printf("\nIO Current: %u mA\n\n",Value);
 				break;
 			case EAPI_ID_HWMON_SYSTEM_TEMP:
 				printf("\nSystem Temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
@@ -900,7 +896,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				printf("\nSystem startup temperature:  %u K (%d C)\n\n",Value,(char)(EAPI_DECODE_CELCIUS(Value)));
 				break;
 			default:
-				printf("\n%d\n\n",Value);
+				printf("\n%u\n\n",Value);
 				break;
 		}
 	}
@@ -989,6 +985,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 	}
 	if (SetWatchdog)
 	{
+		uint32_t delay, EventTimeout;
 		if (argc != 4) {
 			printf("Wrong arguments SetWatchdog\n");
 			exit(-1);
@@ -1376,7 +1373,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Get EApi information failed\n");
 			errno_exit("EApiStorageHexWrite");
 		}
-		printf("%d Bytes Written Successfully\n",ByteCnt/2);
+		printf("%u Bytes Written Successfully\n",ByteCnt/2);
 	}
 
 	if(StorgeHexRead)
@@ -1494,6 +1491,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 
 	if(StorageAreaUnLock)
 	{
+		char *passcode;
 		if (argc != 6) {
 			printf("Wrong arguments\n");
 			exit(-1);
@@ -1516,6 +1514,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 	}
 	if(ODM_write)
 	{
+		uint32_t ODM_Id = 0;
 		if (argc != 5) {
 			printf("Wrong arguments\n");
 			exit(-1);
@@ -1589,11 +1588,11 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			errno_exit("EApiGPIOGetDirectionCaps");
 		}
 		if(input!=0 && output!=0)
-			printf("Input/Output supported for GPIO %d\n",Id);
+			printf("Input/Output supported for GPIO %u\n",Id);
 		else if(input!=0)
-			printf("Input supported for GPIO %d\n",Id);
+			printf("Input supported for GPIO %u\n",Id);
 		else
-			printf("Output supported for GPIO %d\n",Id);
+			printf("Output supported for GPIO %u\n",Id);
 	}
 
 
@@ -1642,7 +1641,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Note: GPIO access may not be available on all platforms\n\n");
 			return -1;
 		}
-		if ((dir < 0) || (dir > 1))
+		if ((dir != 0) && (dir != 1))
 		{
 			printf("invalid gpio direction value\n");
 			return -1;
@@ -1704,7 +1703,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Note: GPIO access may not be available on all platforms\n\n");
 			return -1;
 		}
-		if ((val < 0) || (val > 1))
+		if ((val != 0) && (val != 1))
 		{
 			printf("invalid gpio value\n");
 			return -1;
@@ -1772,6 +1771,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 
 	if (GetExceptionDescription)
 	{
+		uint8_t ExceptionCode;
 		if (argc != 3) {
 			printf("Wrong arguments\n");
 			exit(-1);
@@ -1797,6 +1797,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 
 	if (GetVoltageMonitor)
 	{
+		uint32_t Vid;
 		if (argc != 4) {
 			printf("Wrong arguments\n");
 			exit(-1);
@@ -1851,7 +1852,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 
 	}
 
-	char* list[] = { "EAPI_ID_I2C_EXTERNAL_1", "EAPI_ID_I2C_EXTERNAL_2", "EAPI_ID_I2C_EXTERNAL_3", "EAPI_ID_I2C_EXTERNAL_4" };
+	const char* list[] = { "EAPI_ID_I2C_EXTERNAL_1", "EAPI_ID_I2C_EXTERNAL_2", "EAPI_ID_I2C_EXTERNAL_3", "EAPI_ID_I2C_EXTERNAL_4" };
 
 
 	if (IsI2CCap)
@@ -1863,7 +1864,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 		{
 			if ((sts = EApiI2CGetBusCap(i, &pMaxBlkLen)) == 0)
 			{
-				printf("%-28s is supported. maximum read size is %d bytes, and maximum write size is %d bytes.\n", list[i], pMaxBlkLen, 29);
+				printf("%-28s is supported. maximum read size is %u bytes, and maximum write size is %d bytes.\n", list[i], pMaxBlkLen, 29);
 			}
 			else
 			{
@@ -1899,12 +1900,11 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 				if (once == 1)
 				{
 					printf("\nSlave list in %s bus:\n", list[I2CFuncArgs.BusID - 1]);
-					once = 0;
+					once = sts;
 				}
 				printf("%02d. %x\n",j++, i);
 			}
 			fflush(stdout);
-			fflush(stdin);
 			fflush(stderr);
 		}
 		if (once == 0)
@@ -1943,7 +1943,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Read data:\n\n");
 			for (i = 0; i < I2CFuncArgs.nByteCnt; i++)
 			{
-				printf("%02d : %02x\n", i, ((unsigned char*)(I2CFuncArgs.pBuffer))[i]);
+				printf("%02u : %02x\n", i, ((unsigned char*)(I2CFuncArgs.pBuffer))[i]);
 			}
 			printf("\n");
 		}
@@ -1971,7 +1971,7 @@ int DispatchCMDToSEMA(int argc,char *argv[])
 			printf("Read data:\n\n");
 			for (i = 0; i < I2CFuncArgs.nByteCnt; i++)
 			{
-				printf("%02d : %02x\n", i, ((unsigned char*)(I2CFuncArgs.pBuffer))[i]);
+				printf("%02u : %02x\n", i, ((unsigned char*)(I2CFuncArgs.pBuffer))[i]);
 			}
 			printf("\n");
 		}
@@ -2368,11 +2368,10 @@ signed int ParseArgs(int argc, char* argv[])
 		{
 			if (argc > 6)
 			{
-				int i;
 				IsI2CWrRaw = TRUE;
 				I2CFuncArgs.BusID = atoi(argv[3]);
 				I2CFuncArgs.Address = string_to_hex(argv[4]);
-				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
+				if(I2CFuncArgs.Address > 127)
 				{
 					return -3;
 				}
@@ -2417,6 +2416,7 @@ signed int ParseArgs(int argc, char* argv[])
 						eRet = -3;
 						return eRet;
 					}
+					int i;
 					for (i = 0; i < I2CFuncArgs.WByteCnt; i++)
 					{
 						((unsigned char*)(I2CFuncArgs.pWrBuffer))[i] = string_to_hex(argv[6 + i]);
@@ -2446,7 +2446,7 @@ signed int ParseArgs(int argc, char* argv[])
 				I2CFuncArgs.BusID = atoi(argv[3]);
 				I2CFuncArgs.Address = string_to_hex(argv[4]);
 				I2CFuncArgs.pWrBuffer = malloc(32);
-				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
+				if(I2CFuncArgs.Address > 127)
 				{
 					return -3;
 				}
@@ -2465,13 +2465,13 @@ signed int ParseArgs(int argc, char* argv[])
 					eRet = -3;
 					return eRet;
 				}
-
+				
 				if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt <= 0)
-				{
-					printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
-					eRet = -3;
-					return eRet;
-				}
+                		{
+                			printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
+                    			eRet = -3;
+                    			return eRet;
+                		}
 
 				I2CFuncArgs.pBuffer = calloc(I2CFuncArgs.nByteCnt, sizeof(unsigned char));
 				if (I2CFuncArgs.pBuffer == NULL)
@@ -2523,7 +2523,7 @@ signed int ParseArgs(int argc, char* argv[])
 					eRet = -3;
 				}
 				I2CFuncArgs.Address = string_to_hex(argv[4]);
-				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
+				if(I2CFuncArgs.Address > 127)
 				{
 					return -3;
 				}
@@ -2531,12 +2531,12 @@ signed int ParseArgs(int argc, char* argv[])
 				I2CFuncArgs.WByteCnt = atoi(argv[5]);
 				I2CFuncArgs.nByteCnt = atoi(argv[6]);
 
-				if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt < 0)
-				{
-					printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
-					eRet = -3;
-					return eRet;
-				}
+                if (I2CFuncArgs.nByteCnt > 32 || I2CFuncArgs.nByteCnt < 0)
+                {
+                	printf("\nInvalid Size maximum read size is 32 bytes, min 1 byte.\n");
+                    	eRet = -3;
+                    	return eRet;
+                }
 
 				if(I2CFuncArgs.nByteCnt == 0)
 				{
@@ -2634,7 +2634,7 @@ signed int ParseArgs(int argc, char* argv[])
 				IsI2CReXf = TRUE;
 				I2CFuncArgs.BusID = atoi(argv[3]);
 				I2CFuncArgs.Address = string_to_hex(argv[4]);
-				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
+				if(I2CFuncArgs.Address > 127)
 				{
 					return -3;
 				}
@@ -2661,7 +2661,6 @@ signed int ParseArgs(int argc, char* argv[])
 						I2CFuncArgs.cmd = I2CFuncArgs.cmd | (1 << 30);
 						break;
 					case 2:
-						I2CFuncArgs.cmd = I2CFuncArgs.cmd;
 						break;
 					case 3:
 						I2CFuncArgs.cmd = I2CFuncArgs.cmd | (2 << 30);
@@ -2768,7 +2767,7 @@ signed int ParseArgs(int argc, char* argv[])
 			{
 				I2CFuncArgs.BusID = atoi(argv[3]);
 				I2CFuncArgs.Address = string_to_hex(argv[4]);
-				if( I2CFuncArgs.Address < 0 || I2CFuncArgs.Address > 127)
+				if(I2CFuncArgs.Address > 127)
 				{
 					return -3;
 				}
@@ -2809,7 +2808,6 @@ signed int ParseArgs(int argc, char* argv[])
 
 			if (argc > count)
 			{
-				int i;
 				I2CFuncArgs.cmd = string_to_hex(argv[6]);
 				switch (I2CFuncArgs.CmdType)
 				{
@@ -2818,7 +2816,6 @@ signed int ParseArgs(int argc, char* argv[])
 						I2CFuncArgs.cmd = (I2CFuncArgs.cmd | (1 << 30));
 						break;
 					case 2:
-						I2CFuncArgs.cmd = I2CFuncArgs.cmd;
 						break;
 					case 3:
 						I2CFuncArgs.cmd = (I2CFuncArgs.cmd | (2 << 30));
@@ -2864,6 +2861,7 @@ signed int ParseArgs(int argc, char* argv[])
 						return eRet;
 					}
 					IsI2CWrXf = TRUE;
+					int i;
 					for (i = 0; i < I2CFuncArgs.nByteCnt; i++)
 					{
 						((unsigned char*)(I2CFuncArgs.pBuffer))[i] = string_to_hex(argv[count + i]);
@@ -2937,7 +2935,7 @@ signed int ParseArgs(int argc, char* argv[])
 		{
 			SetBiosSource = TRUE;
 			srcdata = atoi(argv[3]);
-			if (srcdata > 3 || srcdata < 0)
+			if (srcdata > 3)
 			{
 				SetBiosSource = FALSE;
 				help_condition = 12;

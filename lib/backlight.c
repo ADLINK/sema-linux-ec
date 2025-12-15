@@ -22,7 +22,7 @@
 #include <eapi.h>
 #include <common.h>
 
-uint32_t EApiVgaGetBacklightEnable(uint32_t id, uint32_t *pEnable)
+uint32_t EApiVgaGetBacklightEnable(uint32_t Id, uint32_t *pEnable)
 {
 
         uint32_t status = EAPI_STATUS_SUCCESS;
@@ -32,7 +32,7 @@ uint32_t EApiVgaGetBacklightEnable(uint32_t id, uint32_t *pEnable)
 	uint32_t Enable;
 	int ret;
 
-	if (id  != EAPI_ID_BACKLIGHT_1 ) {
+	if (Id  != EAPI_ID_BACKLIGHT_1 ) {
 		errno = EINVAL;
 		return EAPI_STATUS_UNSUPPORTED;
 	}
@@ -57,18 +57,18 @@ uint32_t EApiVgaGetBacklightEnable(uint32_t id, uint32_t *pEnable)
 	return status;
 }
 
-uint32_t EApiVgaSetBacklightEnable(uint32_t id, uint32_t Enable)
+uint32_t EApiVgaSetBacklightEnable(uint32_t Id, uint32_t Enable)
 {
         uint32_t status = EAPI_STATUS_SUCCESS;
-        char value[256];
-	char sysfile[256];
+        char value[256] = {0};
+	char sysfile[256] = {0};
 	int ret;
 
 	if(Enable != EAPI_BACKLIGHT_SET_ON && Enable != EAPI_BACKLIGHT_SET_OFF){
                 return EAPI_STATUS_INVALID_PARAMETER;
         }
 
-	if (id  != EAPI_ID_BACKLIGHT_1 ) {
+	if (Id  != EAPI_ID_BACKLIGHT_1 ) {
 		errno = EINVAL;
 		return EAPI_STATUS_UNSUPPORTED;
 	}
@@ -76,9 +76,9 @@ uint32_t EApiVgaSetBacklightEnable(uint32_t id, uint32_t Enable)
 	sprintf(sysfile, "/sys/class/backlight/adl-ec-bklight/bl_power");
 	
 	if(Enable == 0)
-		sprintf(value, "%u", 4);
+		sprintf(value, "%d", 4);
 	else
-		sprintf(value, "%u", 0);
+		sprintf(value, "%d", 0);
 	
 	
 	ret = write_sysfs_file(sysfile, value, sizeof(value));
@@ -89,19 +89,19 @@ uint32_t EApiVgaSetBacklightEnable(uint32_t id, uint32_t Enable)
 	return status;
 }
 
-uint32_t EApiVgaGetBacklightBrightness(uint32_t id, uint32_t *pBrightness)
+uint32_t EApiVgaGetBacklightBrightness(uint32_t Id, uint32_t *pBright)
 {
         uint32_t status = EAPI_STATUS_SUCCESS;
 	char value[256];
 	char sysfile[256];
 	int ret;
 
-        if(pBrightness == NULL){
+        if(pBright == NULL){
 		errno = EINVAL;
                 return EAPI_STATUS_INVALID_PARAMETER;
         }
 
-	if (id  != EAPI_ID_BACKLIGHT_1 ) {
+	if (Id  != EAPI_ID_BACKLIGHT_1 ) {
 		errno = EINVAL;
 		return EAPI_STATUS_UNSUPPORTED;
 	}
@@ -111,28 +111,28 @@ uint32_t EApiVgaGetBacklightBrightness(uint32_t id, uint32_t *pBrightness)
 		return EAPI_STATUS_READ_ERROR;
 	}	
 
-	*pBrightness = atoi(value);
+	*pBright = atoi(value);
 	return status;
 }
 
-uint32_t EApiVgaSetBacklightBrightness(uint32_t id, uint32_t Brightness)
+uint32_t EApiVgaSetBacklightBrightness(uint32_t Id, uint32_t Bright)
 {
         uint32_t status = EAPI_STATUS_SUCCESS;
-	char value[256];
-	char sysfile[256];
+	char value[256] = {0};
+	char sysfile[256] = {0};
 	ssize_t ret;
 
-	if(Brightness > EAPI_BACKLIGHT_SET_BRIGHTEST){
+	if(Bright > EAPI_BACKLIGHT_SET_BRIGHTEST){
 		errno = EINVAL;
                 return EAPI_STATUS_INVALID_PARAMETER;
         }
 
-	if (id  != EAPI_ID_BACKLIGHT_1 ) {
+	if (Id  != EAPI_ID_BACKLIGHT_1 ) {
 		errno = EINVAL;
 		return EAPI_STATUS_UNSUPPORTED;
 	}
 	sprintf(sysfile, "/sys/class/backlight/adl-ec-bklight/brightness");
-	sprintf(value, "%u", Brightness);
+	sprintf(value, "%u", Bright);
 
 	ret = write_sysfs_file(sysfile, value, sizeof(value));
 	if(ret < 0) {

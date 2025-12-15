@@ -67,13 +67,13 @@ uint32_t EApiWDogGetCap(uint32_t *pMaxDelay, uint32_t *pMaxEventTimeout, uint32_
         return status;
 }
 
-uint32_t EApiWDogStart(uint32_t Delay, uint32_t EventTimeout, uint32_t ResetTimeout)
+uint32_t EApiWDogStart(uint32_t delay, uint32_t EventTimeout, uint32_t ResetTimeout)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
-	unsigned long flags;
-	unsigned short tout;
+	unsigned long flags = 0;
+	unsigned short tout = 0;
 
-	if(Delay>0){
+	if(delay > 0){
                 return EAPI_STATUS_INVALID_PARAMETER;
         }
 
@@ -165,15 +165,15 @@ uint32_t EApiWDogStop(void)
         return status;
 }
 
-uint32_t EApiPwrUpWDogStart(uint32_t timeout)
+uint32_t EApiPwrUpWDogStart(uint32_t Timeout)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	FILE *fp;
-	char sysfile[256];
-	char value[256];
+	char sysfile[256] = {0};
+	char value[256] = {0};
 	int ret;
 
-	if (timeout < 60 || timeout > 65535) {
+	if (Timeout == 0 || Timeout > 65535) {
 		errno = EINVAL;
 		return EAPI_STATUS_INVALID_PARAMETER;
 	}
@@ -182,7 +182,7 @@ uint32_t EApiPwrUpWDogStart(uint32_t timeout)
         fp = fopen(sysfile, "r+");
         if(fp == NULL)
                 return EAPI_STATUS_INVALID_PARAMETER;
-        sprintf(value, "%u", timeout);
+        sprintf(value, "%u", Timeout);
         ret = fwrite(value, 256, sizeof(char), fp);
 
 	if (ret)
@@ -200,7 +200,7 @@ uint32_t EApiPwrUpWDogStop(void)
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	FILE *fp;
 	char sysfile[256];
-	char value[256];
+	char value[256] = {0};
 	uint32_t timeout= 0;
 	int ret;
 

@@ -33,7 +33,7 @@ int StatusCheck(void)
 
 int ReadMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSize)
 {
-    unsigned char  i;
+  
     unsigned char pDataIn[] = { 0x2, 0x1, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };
 
     if(StatusCheck()!=0)
@@ -47,6 +47,7 @@ int ReadMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSi
 
         if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
         {
+    	    unsigned char  i;
             for (i = 0; i < 100; i++)
             {
                 if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
@@ -69,7 +70,7 @@ int ReadMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSi
 
 int WriteMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nSize)
 {
-    unsigned char  i;
+   
     unsigned char pDataIn[] = { 0x2, 0x2, (unsigned char)nSize, (unsigned char)(Region + 1), (unsigned char)(nAdr >> 8), (unsigned char)(nAdr & 0xFF) };
 
 
@@ -85,6 +86,7 @@ int WriteMem(unsigned char Region, unsigned int nAdr, u8* pData, unsigned int nS
             pDataIn[0] = 4;
             if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)
             {
+    		unsigned char  i;
                 for (i = 0; i < 100; i++)
                 {
                     if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pDataIn, 1,EC_REGION_2) == 0)

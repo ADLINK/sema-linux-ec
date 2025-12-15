@@ -106,7 +106,7 @@ int GetManufData(unsigned int nDataInfo, unsigned char* pData, unsigned int nLen
     return -1;
 }
 
-int converttoint(char *buf)
+int converttoint(const char *buf)
 {
     int i, result = 0;
     for(i = 0;buf[i] != 0; i++)
@@ -316,7 +316,7 @@ static int pos;
 
 static int read_error_log(int pos, void *buf, int len)
 {
-	int i;
+
 	char pData[] = {0x2, 0x1, 0x0, 0x5, 0, pos};
 
 	if (adl_bmc_ec_write_device(EC_WO_ADDR_IIC_CMD_START, pData, 6, EC_REGION_2) == 0)
@@ -324,6 +324,7 @@ static int read_error_log(int pos, void *buf, int len)
 		pData[0] = 4;
 		if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pData, 1, EC_REGION_2) == 0)
 		{
+			int i;
 			for (i = 0; i < 100; i++)
 			{
 				if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pData, 1, EC_REGION_2) == 0)
@@ -359,7 +360,7 @@ static ssize_t sysfs_show_error_log(struct kobject *kobj, struct kobj_attribute 
     if (ret < 0)
 	return 0;
 
-    ret = sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %d BIOSSel %d\n", \
+    ret = sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %u BIOSSel %d\n", \
 		    errlog.errnum, errlog.flags, errlog.restartevent, errlog.pwrcycles, errlog.bootcnt, errlog.time, errlog.status, errlog.cputemp, errlog.boardtemp, errlog.totalontime, errlog.BIOS_selected);
 
     return ret;
@@ -369,7 +370,7 @@ static ssize_t sysfs_store_error_log(struct kobject *kobj, struct kobj_attribute
 {
     pos = converttoint((char *)buf);
 
-    if(pos < 0 && pos > 32)
+    if(pos < 0 || pos > 32)
     {
 	    return -1;
     }
@@ -387,13 +388,13 @@ static ssize_t cur_pos_error_log_show(struct kobject *kobj, struct kobj_attribut
     if (ret < 0)
 	return ret;
 
-    return sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %d BIOSSel %d\n", \
+    return sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %u BIOSSel %d\n", \
 		    errlog.errnum, errlog.flags, errlog.restartevent, errlog.pwrcycles, errlog.bootcnt, errlog.time, errlog.status, errlog.cputemp, errlog.boardtemp, errlog.totalontime, errlog.BIOS_selected);
 }
 
 static ssize_t sysfs_show_err_num_des(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int cnt, ret; 
+	int cnt; 
 	unsigned char buff[33];
 	int errcode;
 	struct boarderrlog errlog={0};
@@ -406,6 +407,7 @@ static ssize_t sysfs_show_err_num_des(struct kobject *kobj, struct kobj_attribut
 	for (cnt = 0; cnt < 32; cnt ++)
 	{
 		unsigned short errnumcv;
+		int ret;
 
 		ret = read_error_log(cnt, (void*)&errlog, sizeof(struct boarderrlog));	
 
@@ -1054,7 +1056,7 @@ static ssize_t sysfs_store_bios_source(struct kobject *kobj, struct kobj_attribu
     int ret, data;
     data = converttoint((char *)buf);
 
-    if(data > 4 && data < 0)
+    if(data > 4 || data < 0)
     {
             return -1;
     }

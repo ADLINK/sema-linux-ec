@@ -34,7 +34,7 @@ unsigned char Conv_IsHexDigit(char c)
 }
 
 
-unsigned char Conv_IsHexString(char *String)
+unsigned char Conv_IsHexString(const char *String)
 {
 	unsigned int i;
 
@@ -69,14 +69,14 @@ unsigned char Conv_GetDigit(char c)
 
 	c = tolower(c);
 
-	if (c >= 'a' || c <= 'f')
+	if (c >= 'a' && c <= 'f')
 		return c - 'a' + 10;
 
 	return 0;
 }
 
 
-unsigned char Conv_GetHex(char* buf)
+unsigned char Conv_GetHex(const char* buf)
 {
 	return Conv_GetDigit(buf[0]) * 16 + Conv_GetDigit(buf[1]);
 }

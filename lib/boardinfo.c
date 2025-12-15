@@ -44,7 +44,7 @@ int volt;
 char volt_desc[100];
 };
 
-uint32_t IsFileExist(char *sysf)
+uint32_t IsFileExist(const char *sysf)
 {
 	int fd;
 	fd = open(sysf, O_RDONLY);
@@ -55,7 +55,7 @@ uint32_t IsFileExist(char *sysf)
 
 }
 
-uint32_t EApiBoardGetStringA(uint32_t Id, char *pBuffer, uint32_t *pBufLen)
+uint32_t EApiBoardGetStringA(uint32_t Id,char *pBuffer,const uint32_t *pBufLen)
 {
 
 	char res[128];
@@ -328,7 +328,7 @@ static int get_regulator_voltage(int id, uint32_t *mVolts, char *buf, uint32_t s
 
 	if(id >= MAX_ID)
 	{
-	 return -1;
+	 	return -1;
 	}
 
 	dev_handle = open("/dev/adl_vm",O_RDONLY);
@@ -355,17 +355,16 @@ static int get_regulator_voltage(int id, uint32_t *mVolts, char *buf, uint32_t s
 
 }
 
-uint32_t EApiBoardGetVoltageMonitor(uint32_t id, uint32_t *mVolts, char *buf, uint32_t size)
+uint32_t EApiBoardGetVoltageMonitor(uint32_t id, uint32_t *pVoltage, char *pBuf, uint32_t size)
 {
 	int ret;
 	
-
-	if ((mVolts == NULL) || (buf == NULL))
+	if ((pVoltage == NULL) || (pBuf == NULL))
 	{
 		return EAPI_STATUS_INVALID_PARAMETER;
        	}
 	
-	ret = get_regulator_voltage(id, mVolts, buf, size);
+	ret = get_regulator_voltage(id, pVoltage, pBuf, size);
 	if(ret==-1)
 	{
 		return EAPI_STATUS_ERROR;
@@ -396,8 +395,8 @@ uint32_t EApiBoardGetVoltageCap(uint32_t *value)
 	
 }
 
-uint32_t EApiBoardGetErrorLog (uint32_t Pos, uint32_t *ErrorNumber, uint8_t  *Flags, uint8_t  *RestartEvent, uint32_t *PwrCycles, uint32_t *Bootcount, uint32_t *Time, uint8_t *Status, \
-		signed char *CPUtemp, signed char *Boardtemp, uint32_t *totalontime, uint8_t *BiosSel)
+uint32_t EApiBoardGetErrorLog (uint32_t position, uint32_t *ErrorNumber, uint8_t  *Flags, uint8_t  *RestartEvent, uint32_t *PwrCycles, uint32_t *Bootcount, uint32_t *Time, uint8_t *Status, \
+		signed char *CPUtemp, signed char *Boardtemp, uint32_t *TotalOnTime, uint8_t *BiosSel)
 {
         char sysfile[128];
 	int ret, i, j;
@@ -405,19 +404,19 @@ uint32_t EApiBoardGetErrorLog (uint32_t Pos, uint32_t *ErrorNumber, uint8_t  *Fl
 	char buf[32];
 
 	uint32_t status = EAPI_STATUS_SUCCESS;
-	char *data[] = {"ErrorNumber", "Flags", "RestartEvent", "PowerCycle", "BootCount", "Time", "Status", "CPUTemp", "BoardTemp", "TotalOnTime", "BIOSSel", NULL};
-	char *value[9];
+	const char *data[] = {"ErrorNumber", "Flags", "RestartEvent", "PowerCycle", "BootCount", "Time", "Status", "CPUTemp", "BoardTemp", "TotalOnTime", "BIOSSel", NULL};
+	char *value[11] = {0};
 
 	char pBuffer[1024] = {0};
 
-	if((ErrorNumber==NULL) ||(Flags==NULL)||(RestartEvent==NULL)||(PwrCycles==NULL)||(Bootcount==NULL)||(Time==NULL)||(Status==NULL) || (CPUtemp==NULL) || (Boardtemp==NULL) || (totalontime == NULL) || (BiosSel == NULL)){
+	if((ErrorNumber==NULL) ||(Flags==NULL)||(RestartEvent==NULL)||(PwrCycles==NULL)||(Bootcount==NULL)||(Time==NULL)||(Status==NULL) || (CPUtemp==NULL) || (Boardtemp==NULL) || (TotalOnTime == NULL) || (BiosSel == NULL)){
 		return EAPI_STATUS_INVALID_PARAMETER;
 	}
 
 	memset(res, 0, sizeof(res));
 	memset(buf, 0, sizeof(buf));
 	/*store exception number to buf*/
-	sprintf(buf, "%u", Pos);
+	sprintf(buf, "%u", position);
 	sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/error_log");
 
 	ret = write_sysfs_file(sysfile, buf, sizeof(buf));
@@ -430,14 +429,15 @@ uint32_t EApiBoardGetErrorLog (uint32_t Pos, uint32_t *ErrorNumber, uint8_t  *Fl
 		return EAPI_STATUS_READ_ERROR;
 	}	
 
-	char *test = pBuffer, *token;
-	for(i = 0; (token = strtok(test, ": \n")) != NULL; i++)
+	char *test = pBuffer, *saveptr;
+	const char *token;
+	for(i = 0; (token = strtok_r(test, ": \n",&saveptr)) != NULL; i++)
 	{
 		for(j = 0; data[j] != NULL; j++)
 		{
 			if(strcmp(data[j], token) == 0)
 			{
-				token = strtok(NULL,": \n");
+				token = strtok_r(NULL,": \n",&saveptr);
 				value[j] = strdup(token);
 			}
 		}
@@ -451,7 +451,7 @@ uint32_t EApiBoardGetErrorLog (uint32_t Pos, uint32_t *ErrorNumber, uint8_t  *Fl
 	*PwrCycles = atoi(value[3]);
 	*Bootcount = atoi(value[4]);
 	*Time = atoi(value[5]);
-	*totalontime = atoi(value[9]);
+	*TotalOnTime = atoi(value[9]);
 	*BiosSel = atoi(value[10]);
 	strcpy((char *)Status, value[6]);
 	strcpy((char *)CPUtemp, value[7]);
@@ -461,19 +461,19 @@ uint32_t EApiBoardGetErrorLog (uint32_t Pos, uint32_t *ErrorNumber, uint8_t  *Fl
 }
 
 uint32_t EApiBoardGetCurPosErrorLog (uint32_t *ErrorNumber, uint8_t  *Flags, uint8_t  *RestartEvent, uint32_t *PwrCycles, uint32_t *Bootcount, uint32_t *Time, uint8_t *Status, signed char *CPUtemp,\
-		signed char *Boardtemp, uint32_t *totalontime, uint8_t *BiosSel)
+		signed char *Boardtemp, uint32_t *TotalOnTime, uint8_t *BiosSel)
 {
 	char sysfile[128];
 	int ret, i, j;
         unsigned char res[32];
 
 	uint32_t status = EAPI_STATUS_SUCCESS;
-	char *data[] = {"ErrorNumber", "Flags", "RestartEvent", "PowerCycle", "BootCount", "Time", "Status", "CPUTemp", "BoardTemp", "TotalOnTime", "BIOSSel", NULL};
-	char *value[9];
+	const char *data[] = {"ErrorNumber", "Flags", "RestartEvent", "PowerCycle", "BootCount", "Time", "Status", "CPUTemp", "BoardTemp", "TotalOnTime", "BIOSSel", NULL};
+	char *value[11] = {0};
 
 	char pBuffer[1024] = {0};
 
-	if((ErrorNumber==NULL) ||(Flags==NULL)||(RestartEvent==NULL)||(PwrCycles==NULL)||(Bootcount==NULL)||(Time==NULL)||(Status==NULL) || (CPUtemp==NULL) || (Boardtemp==NULL) || (totalontime == NULL) || (BiosSel == NULL)){
+	if((ErrorNumber==NULL) ||(Flags==NULL)||(RestartEvent==NULL)||(PwrCycles==NULL)||(Bootcount==NULL)||(Time==NULL)||(Status==NULL) || (CPUtemp==NULL) || (Boardtemp==NULL) || (TotalOnTime == NULL) || (BiosSel == NULL)){
 		return EAPI_STATUS_INVALID_PARAMETER;
 	}
 
@@ -486,14 +486,15 @@ uint32_t EApiBoardGetCurPosErrorLog (uint32_t *ErrorNumber, uint8_t  *Flags, uin
 		return EAPI_STATUS_READ_ERROR;
 	}	
 
-	char *test = pBuffer, *token;
-	for(i = 0; (token = strtok(test, ": \n")) != NULL; i++)
+	char *test = pBuffer, *saveptr;
+	const char *token;
+	for(i = 0; ((token = strtok_r(test, ": \n", &saveptr)) != NULL); i++)
 	{
 		for(j = 0; data[j] != NULL; j++)
 		{
 			if(strcmp(data[j], token) == 0)
 			{
-				token = strtok(NULL,": \n");
+				token = strtok_r(NULL,": \n", &saveptr);
 				value[j] = strdup(token);
 			}
 		}
@@ -506,7 +507,7 @@ uint32_t EApiBoardGetCurPosErrorLog (uint32_t *ErrorNumber, uint8_t  *Flags, uin
 	*PwrCycles = atoi(value[3]);
 	*Bootcount = atoi(value[4]);
 	*Time = atoi(value[5]);
-	*totalontime = atoi(value[9]);
+	*TotalOnTime = atoi(value[9]);
 	*BiosSel = atoi(value[10]);
 	strcpy((char *)Status, value[6]);
 	strcpy((char *)CPUtemp, value[7]);
@@ -516,7 +517,7 @@ uint32_t EApiBoardGetCurPosErrorLog (uint32_t *ErrorNumber, uint8_t  *Flags, uin
 }
 
 
-uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos, char *pBuf, uint32_t Size)
+uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos,char *pBuf,uint32_t size)
 {
 	char sysfile[128];
 	int ret;
@@ -538,7 +539,7 @@ uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos, char *pBuf, uint32_t Size)
 		printf("write error\n");
 		return EAPI_STATUS_WRITE_ERROR;
 	}	
-	ret = read_sysfs_file(sysfile, pBuf, Size);
+	ret = read_sysfs_file(sysfile, pBuf, size);
 	if(ret < 0) {
 		printf("read error\n");
 		return EAPI_STATUS_READ_ERROR;
@@ -548,21 +549,21 @@ uint32_t EApiBoardGetErrorNumDesc(uint32_t Pos, char *pBuf, uint32_t Size)
 }
 
 
-uint32_t EApiBoardGetExcepDesc(uint32_t exc_code, char *exc_desc, uint32_t size)
+uint32_t EApiBoardGetExcepDesc(uint32_t Exceptioncode, char *pBuf, uint32_t size)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	char sysfile[128];
 	int ret;
 	char buf[32];
 
-	if(exc_desc ==  NULL)
+	if(pBuf ==  NULL)
 		return EAPI_STATUS_INVALID_PARAMETER;
 
 	memset(buf, 0, sizeof(buf));
-	memset(exc_desc, 0, size);
+	memset(pBuf, 0, size);
 
 	/*store exception number to buf*/
-	sprintf(buf, "%u", exc_code);
+	sprintf(buf, "%u", Exceptioncode);
 	sprintf(sysfile, "/sys/bus/platform/devices/adl-ec-boardinfo/information/exc_des");
 
 	ret = write_sysfs_file(sysfile, buf, sizeof(buf));
@@ -570,7 +571,7 @@ uint32_t EApiBoardGetExcepDesc(uint32_t exc_code, char *exc_desc, uint32_t size)
 		return EAPI_STATUS_WRITE_ERROR;
 	}
 
-	ret = read_sysfs_file(sysfile, exc_desc, size);
+	ret = read_sysfs_file(sysfile, pBuf, size);
 	if(ret < 0) {
 		return EAPI_STATUS_READ_ERROR;
 	}

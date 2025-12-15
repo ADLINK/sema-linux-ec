@@ -57,7 +57,7 @@ struct gpiostruct{
 
 static int get_gpio_base(int *gpiobase, int *ngpio)
 {
-	struct dirent *de;  // Pointer for directory entry 
+	const struct dirent *de;  // Pointer for directory entry 
 
 	// opendir() returns a pointer of DIR type.  
 	DIR *dr = opendir("/sys/class/gpio"); 
@@ -96,14 +96,11 @@ static int get_gpio_base(int *gpiobase, int *ngpio)
 		}
 	}
 	closedir(dr);     
-
 	return -1;
 }
 
 int initialize_gpio(void)
 {
-	int gpio,ret,fd;
-	uint16_t bit = 0;
 	uint32_t value = 0;
 	DIR *gpio_dir = opendir("/sys/class/gpio");
 
@@ -113,23 +110,29 @@ int initialize_gpio(void)
 	}
 	else
 	{
+		int fd;
 		if((gpiobase == -1) || (ngpio == -1)) {
+			int ret;
 			ret = get_gpio_base(&gpiobase, &ngpio);
 			if(ret < 0) {
+				closedir(gpio_dir);
 				return -1;
 			}
 		}
 		if((fd=open("/dev/gpio_adl",O_RDONLY)) >= 0)
 		{
+			int gpio;
 			for(gpio = gpiobase; gpio < (gpiobase + ngpio); gpio++) {
-			char export[256],path[100];
+			char path[100];
 			struct stat stats;
 			sprintf(path, "/sys/class/gpio/gpio%d" , gpio);
 			if(stat(path, &stats) != 0)
 			{
+				char export[256];
+				uint16_t bit = 0;
 				sprintf(export, "echo %d > /sys/class/gpio/export", gpio);
 				system(export);
-				ret = ioctl(fd , GET_GPIO_DIR , &value);
+				ioctl(fd , GET_GPIO_DIR , &value);
 				bit = gpio - gpiobase;
 				value >>= bit;
 				if(value & 1)
@@ -141,6 +144,7 @@ int initialize_gpio(void)
 			}
 		   }
 		}
+		closedir(gpio_dir);
 		close(fd);
 	}
 	return 0;
@@ -217,19 +221,24 @@ uint32_t EApiGPIOGetDirectionCaps(uint32_t Id, uint32_t *pInputs, uint32_t *pOut
 	uint32_t status = EAPI_STATUS_SUCCESS;
 
 	uint32_t BitMask = 0xFFFF;
-	char label[256];
-        char boardname[11];
+	
 	if (Id > 8)
-        {
-                sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
-                status = read_sysfs_file(label,boardname,sizeof(boardname));
-		if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+	{
+			char label[256];
+        	char boardname[11];
+                
+			sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
+            status = read_sysfs_file(label,boardname,sizeof(boardname));
+			
+			if(!status)
+			{
+				if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
                 {
                         printf("GPIO value should be 1-8\n");
                         return EAPI_STATUS_UNSUPPORTED;
                 }
-        }
-
+			}
+    }
 
 	status = adjustBitMask(Id, &BitMask);
 	if (status)
@@ -255,37 +264,37 @@ uint32_t EApiGPIOGetDirectionCaps(uint32_t Id, uint32_t *pInputs, uint32_t *pOut
 			*pOutputs = EAPI_GPIO_OUTPUT;
 	}
 
-	return status;
+	return 0;
 }
 
 uint32_t EApiGPIOGetDirection(uint32_t Id, uint32_t Bitmask, uint32_t *pDirection)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	int gpio;
- 	uint32_t bit;
-	char sysfile[256];
-	char value[5];
-	char label[256];
-	char boardname[11];
-	*pDirection = 0;
 
 	//status = adjustBitMask(Bitmask, &Bitmask);
 	//if (status)
 	//	return status;
 	if (Bitmask > 0xff)
 	{
- 		sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
+		char label[256];
+		char boardname[11];
+		sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
 		gpio = read_sysfs_file(label,boardname,sizeof(boardname));
-		if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+		if(!gpio)
 		{
-                        printf("GPIO value should be 1-8\n");
-			return EAPI_STATUS_UNSUPPORTED;
+			if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+			{
+            	printf("GPIO value should be 1-8\n");
+				return EAPI_STATUS_UNSUPPORTED;
+			}
 		}
 	}
 
 	if(pDirection==NULL)
 		return EAPI_STATUS_INVALID_PARAMETER;
 
+	*pDirection = 0;
 
 	if(cdev_gpio == 1)
 	{
@@ -306,6 +315,9 @@ uint32_t EApiGPIOGetDirection(uint32_t Id, uint32_t Bitmask, uint32_t *pDirectio
 	}
 	else
 	{
+ 		uint32_t bit;
+		char sysfile[256], value[5];
+		
 		for(gpio = gpiobase, bit = 0; gpio < (gpiobase + ngpio); gpio++, bit++) {
                	 	if(Bitmask & (1 << bit)) {
                         	sprintf(sysfile, "/sys/class/gpio/gpio%d/direction", gpio);
@@ -326,21 +338,21 @@ uint32_t EApiGPIOSetDirection(uint32_t Id, uint32_t Bitmask, uint32_t Direction)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	int gpio;
-	uint32_t bit;
-	char sysfile[256];
-	char label[256];
-        char boardname[11];
 
 	if (Bitmask > 0xff)
 	{
+		char label[256];
+        char boardname[11];
 		sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
-                gpio = read_sysfs_file(label,boardname,sizeof(boardname));
-		if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
-	       	{
-                        printf("GPIO value should be 1-8\n");
-                        return EAPI_STATUS_UNSUPPORTED;
-                }
-
+        gpio = read_sysfs_file(label,boardname,sizeof(boardname));
+		if(!gpio)
+		{
+			if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+	    	{
+            	printf("GPIO value should be 1-8\n");
+                return EAPI_STATUS_UNSUPPORTED;
+            }
+		}
 	}
 
 	if(cdev_gpio ==1)
@@ -376,6 +388,8 @@ uint32_t EApiGPIOSetDirection(uint32_t Id, uint32_t Bitmask, uint32_t Direction)
     	}
 	else
 	{
+		uint32_t bit;
+		char sysfile[256];
 		for(gpio = gpiobase, bit = 0; gpio < (gpiobase + ngpio); gpio++, bit++) {
 			if(Bitmask & (1 << bit)) {
 				if(Direction) {
@@ -398,23 +412,23 @@ uint32_t EApiGPIOGetLevel(uint32_t Id, uint32_t Bitmask, uint32_t *pLevel)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	int gpio;
-	uint32_t bit;
-	char sysfile[256];
 	char value;
-	char label[256];
-        char boardname[11];
 	*pLevel = 0;
 
 	if (Bitmask > 0xff)
 	{
+		char label[256];
+        char boardname[11];
 		sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
                 gpio = read_sysfs_file(label,boardname,sizeof(boardname));
-		if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+		if(!gpio)
+		{
+			if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
 	       	{
-                        printf("GPIO value should be 1-8\n");
-                        return EAPI_STATUS_UNSUPPORTED;
-                }
-
+            	printf("GPIO value should be 1-8\n");
+            	return EAPI_STATUS_UNSUPPORTED;
+            }
+		}
 	}
 
 	if(cdev_gpio ==1)
@@ -442,6 +456,8 @@ uint32_t EApiGPIOGetLevel(uint32_t Id, uint32_t Bitmask, uint32_t *pLevel)
 	}
 	else
 	{
+		uint32_t bit;
+		char sysfile[256];
 		for(gpio = gpiobase, bit = 0; gpio < (gpiobase + ngpio); gpio++, bit++) {
 			if(Bitmask & (1 << bit)) {
 				sprintf(sysfile, "/sys/class/gpio/gpio%d/value", gpio);
@@ -463,21 +479,22 @@ uint32_t EApiGPIOSetLevel(uint32_t Id, uint32_t Bitmask, uint32_t Level)
 {
 	uint32_t status = EAPI_STATUS_SUCCESS;
 	int gpio;
-	uint32_t bit;
-	char sysfile[256];
-	char label[256];
-        char boardname[11];
 
 	if (Bitmask > 0xff)
 	{
+		char label[256];
+        char boardname[11];
+
 		sprintf(label, "/sys/bus/platform/devices/adl-ec-boardinfo/information/board_name");
                 gpio = read_sysfs_file(label,boardname,sizeof(boardname));
-		if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+		if(!gpio)
 		{
-                        printf("GPIO value should be 1-8\n");
-                        return EAPI_STATUS_UNSUPPORTED;
-                }
-
+			if((strstr(boardname,"HPC") || strstr(boardname,"hpc"))==0)
+			{
+            	printf("GPIO value should be 1-8\n");
+            	return EAPI_STATUS_UNSUPPORTED;
+            }
+		}
 	}
 
 	if(cdev_gpio ==1)
@@ -515,6 +532,8 @@ uint32_t EApiGPIOSetLevel(uint32_t Id, uint32_t Bitmask, uint32_t Level)
 	}
 	else
 	{
+		uint32_t bit;
+		char sysfile[256];
 		for(gpio = gpiobase, bit = 0; gpio < (gpiobase + ngpio); gpio++, bit++) {
 			if(Bitmask & (1 << bit)) {
 				if(Level & (1 << bit)) 

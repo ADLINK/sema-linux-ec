@@ -12,6 +12,7 @@
 * Q7-EL
 * Express-VR7
 * VPX3-TL
+* cExpress-R8
 
 ### Supported Operating System:
 * Ubuntu 18.04, 20.04, 22.04, 24.04
@@ -27,5 +28,5 @@
    
 ### Other information:
 * branch name: SEMA_4.0_Linux_SandBox/ACPI-EC
-* the internal latest commit ID: f933e426c41ec8dce6bd440bb777d2d5fefa5ea1
+* the internal latest commit ID: f8e43dc90741056119cee1cb3f7928d931540227
 

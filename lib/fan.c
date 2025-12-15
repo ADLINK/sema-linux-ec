@@ -124,7 +124,6 @@ uint32_t EApiSmartFanGetTempSetpoints(int id, int *pLevel1, int *pLevel2, int *p
 	}
 	return EAPI_STATUS_SUCCESS;
 
-
 }
 
 uint32_t EApiSmartFanSetPWMSetpoints(int id, int pwm_Level1, int pwm_Level2, int pwm_Level3, int pwm_Level4)
@@ -180,7 +179,7 @@ uint32_t EApiSmartFanSetPWMSetpoints(int id, int pwm_Level1, int pwm_Level2, int
 
 }
 
-uint32_t EApiSmartFanGetPWMSetpoints(int id, int *pLevel1, int *pLevel2, int *pLevel3, int *pLevel4)
+uint32_t EApiSmartFanGetPWMSetpoints(int id, int *pwm_Level1, int *pwm_Level2, int *pwm_Level3, int *pwm_Level4)
 {
 	char fan_sysfile[512];
 	int i;
@@ -189,7 +188,7 @@ uint32_t EApiSmartFanGetPWMSetpoints(int id, int *pLevel1, int *pLevel2, int *pL
 
 
 	/*Check inputs are valid*/
-	if((pLevel1 == NULL) || (pLevel2 == NULL) || (pLevel3 == NULL) || (pLevel4 == NULL) || (id < 0) || (id > 1))
+	if((pwm_Level1 == NULL) || (pwm_Level2 == NULL) || (pwm_Level3 == NULL) || (pwm_Level4 == NULL) || (id < 0) || (id > 1))
 	{
 		errno = EINVAL;
 		return EAPI_STATUS_INVALID_PARAMETER;
@@ -218,13 +217,13 @@ uint32_t EApiSmartFanGetPWMSetpoints(int id, int *pLevel1, int *pLevel2, int *pL
 			return EAPI_STATUS_READ_ERROR;
 		}
 		if(i==1)
-			*pLevel1 = atoi(buff);
+			*pwm_Level1 = atoi(buff);
 		else if(i==2)
-			*pLevel2 = atoi(buff);
+			*pwm_Level2 = atoi(buff);
 		else if(i==3)
-			*pLevel3 = atoi(buff);
+			*pwm_Level3 = atoi(buff);
 		else if(i==4)
-			*pLevel4 = atoi(buff);
+			*pwm_Level4 = atoi(buff);
 	}
 	return EAPI_STATUS_SUCCESS;
 
@@ -417,7 +416,6 @@ int get_hwmon_num(void)
 			closedir(dir);
 			return fan_no;
 		}
-		
 			
 	}
 
