@@ -25,7 +25,7 @@ all: libsema.so semautil wdogtest modules
 driver: modules
 
 libsema.so: $(SEMA_OBJS)
-	@gcc -shared -fPIC -g -o lib/$@ $^
+	@$(CC) -shared -fPIC -g -o lib/$@ $^
 
 modules:
 	@make -C /lib/modules/`uname -r`/build M=`pwd` $@
@@ -91,16 +91,16 @@ app_clean:
 	@rm -f semautil wdogtest app/*.o lib/*.o lib/*.so
 
 semautil: $(APP_OBJS)
-	@gcc -g -o $@ $^ -Llib -lsema -luuid
+	@$(CC) -g -o $@ $^ -Llib -lsema -luuid
 
 wdogtest: $(WDOG_OBJS)
-	@gcc $^ -g -o $@
+	@$(CC) $^ -g -o $@
 
 lib/%.o: lib/%.c
-	@gcc -Wall -I lib -g -fPIC -c $< -o $@
+	@$(CC) -Wall -I lib -g -fPIC -c $< -o $@
 
 app/%.o: app/%.c
-	@gcc -Wall -I lib -g -fPIC -c $< -o $@
+	@$(CC) -Wall -I lib -g -fPIC -c $< -o $@
 
 watchdogtest/%.o: watchdogtest/%.c
-	@gcc -Wall -I lib -g -fPIC -c $< -o $@
+	@$(CC) -Wall -I lib -g -fPIC -c $< -o $@
