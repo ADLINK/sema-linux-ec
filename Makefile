@@ -90,8 +90,8 @@ driver_clean:
 app_clean:
 	@rm -f semautil wdogtest app/*.o lib/*.o lib/*.so
 
-semautil: $(APP_OBJS)
-	@$(CC) -g -o $@ $^ -Llib -lsema -luuid
+semautil: libsema.so $(APP_OBJS)
+	@$(CC) -g -o $@ $(APP_OBJS) -Llib -lsema -luuid
 
 wdogtest: $(WDOG_OBJS)
 	@$(CC) $^ -g -o $@
