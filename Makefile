@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
+DESTDIR ?=
+PREFIX ?= /usr
+
 SEMA_OBJS = $(patsubst %.c,%.o,$(wildcard lib/*.c))
 WDOG_OBJS = $(patsubst %.c,%.o,$(wildcard watchdogtest/*.c))
 APP_OBJS = $(patsubst %.c,%.o,$(wildcard app/*.c))
@@ -77,8 +80,9 @@ driver_install:
 	@depmod -a
 
 app_install:
-	@cp lib/libsema.so /usr/lib
-	@cp wdogtest semautil /usr/bin
+	@install -d $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/bin
+	@install -m 755 lib/libsema.so $(DESTDIR)$(PREFIX)/lib
+	@install -m 755 wdogtest semautil $(DESTDIR)$(PREFIX)/bin
 
 driver_clean:
 	@make -C /lib/modules/`uname -r`/build M=`pwd` clean
