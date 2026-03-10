@@ -23,12 +23,14 @@ DIR2 = /lib/modules/$(shell uname -r)/extra
 
 adl-ec-nvmem-sec-m := driver/adl-ec-nvmem-sec.o driver/nvmem-common.o	 
 adl-ec-nvmem-m := driver/adl-ec-nvmem.o driver/nvmem-common.o	 
-all: libsema.so semautil wdogtest modules
+all: app_build modules
 
 driver: modules
 
 libsema.so: $(SEMA_OBJS)
 	@$(CC) -shared -fPIC -g -o lib/$@ $^
+
+app_build: libsema.so semautil wdogtest
 
 modules:
 	@make -C /lib/modules/`uname -r`/build M=`pwd` $@
