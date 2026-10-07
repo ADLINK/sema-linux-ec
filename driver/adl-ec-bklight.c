@@ -46,7 +46,7 @@ static int first = 0;
 
 static int adl_bmc_bklight_update_status(struct backlight_device *bl)
 {
-	char brightness = 0;
+	unsigned char brightness = 0;
 	unsigned char buff[2];
 	int ret;
 
@@ -174,7 +174,7 @@ static int adl_bmc_bklight_probe(struct platform_device *pdev)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
-void adl_bmc_bklight_remove(struct platform_device *pdev)
+static void adl_bmc_bklight_remove(struct platform_device *pdev)
 #else
 static int adl_bmc_bklight_remove(struct platform_device *pdev)
 #endif

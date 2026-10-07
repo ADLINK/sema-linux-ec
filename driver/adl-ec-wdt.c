@@ -49,16 +49,10 @@ static int adl_bmc_wdt_write(unsigned short val)
 	buff[1] = val >> 8;
 
 	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_SET_WD_CURR, ((u8*)(&buff[0])), 2, EC_REGION_1);
-	
-	if (ret < 0) {
-		debug_printk("EC write error (CURR): %d\n", ret);
-		return ret;
-	}
-	
 	ret = adl_bmc_ec_write_device(ADL_BMC_OFS_SET_WD, ((u8*)(&buff[0])), 2, EC_REGION_1);
 
 	if (ret < 0) {
-		debug_printk("EC write error (SET): %d\n", ret);
+		debug_printk("EC write error: %d\n", ret);
 		return ret;
 	}
 	
@@ -174,7 +168,7 @@ static ssize_t sysfs_store_PwrUpWDog(struct kobject *kobj, struct kobj_attribute
 	return count;
 }
 
-int open(struct inode *inode, struct file *file)
+static int open(struct inode *inode, struct file *file)
 {
         if(flag == 0)
         {
@@ -187,7 +181,7 @@ int open(struct inode *inode, struct file *file)
         }
 }
 
-int release(struct inode *inode, struct file *file)
+static int release(struct inode *inode, struct file *file)
 {
         flag = 0;
         return 0;
@@ -195,34 +189,30 @@ int release(struct inode *inode, struct file *file)
 
 static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
 {
-        int ret;
+        int RetVal;
         uint16_t timeout;
         switch(cmd)
         {
                 case SET_WDT_TIMEOUT:
                 {
-                        if(copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout))!=0)
+                        if((RetVal = copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout)))!=0)
                         {
                                 return -EFAULT;
                         }
 
-                        ret = adl_bmc_wdt_set_timeout(timeout);
-						if(ret < 0)
-							return ret;
+                        RetVal=adl_bmc_wdt_set_timeout(timeout);
                 }
                 break;
 		case GET_WDT_TIMEOUT:
                 {
-                        if(copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout))!=0)
+                        if((RetVal = copy_from_user(&timeout,(uint16_t *)arg,sizeof(timeout)))!=0)
                         {
                                 return -EFAULT;
                         }
 
-                        ret = adl_bmc_wdt_get_timeleft(&timeout);
-						if(ret < 0)
-							return ret;
+                        RetVal= adl_bmc_wdt_get_timeleft(&timeout);
 
-                        if(copy_to_user((uint16_t *) arg,&timeout,sizeof(timeout))!=0)
+                        if((RetVal = copy_to_user((uint16_t *) arg,&timeout,sizeof(timeout)))!=0)
                         {
                                 return -EFAULT;
                         }
@@ -230,24 +220,20 @@ static long int ioctl (struct file *file, unsigned cmd, unsigned long arg)
                 break;
                 case TRIGGER_WDT:
                 {
-                        if(copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout))!=0)
+                        if((RetVal = copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout)))!=0)
                         {
                                 return -EFAULT;
                         }
-                        ret = adl_bmc_wdt_set_timeout(timeout);
-						if(ret < 0)
-							return ret;
+                        RetVal=adl_bmc_wdt_set_timeout(timeout);
 		}        
                 break;
                 case STOP_WDT_TIMEOUT:
                 {
-                        if(copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout))!=0)
+                        if((RetVal = copy_from_user(&timeout, (uint16_t *) arg, sizeof(timeout)))!=0)
                         {
                                 return -EFAULT;
                         }
-                        ret = adl_bmc_wdt_stop(timeout);
-						if(ret < 0)
-							return ret;
+                        RetVal=adl_bmc_wdt_stop(timeout);
                 }
                 break;
  		default:
@@ -332,7 +318,7 @@ static int adl_bmc_wdt_probe(struct platform_device *pdev)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
-void  adl_bmc_wdt_remove(struct platform_device *pdev)
+static void  adl_bmc_wdt_remove(struct platform_device *pdev)
 #else
 static int adl_bmc_wdt_remove(struct platform_device *pdev)
 #endif

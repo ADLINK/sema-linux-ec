@@ -20,6 +20,8 @@ EC GPIO Interrupt Pin numbers
   c. Express-RLP  - 685 (pin 112 ISH_UART0_RXD)
   d. cExpress-MTL - 644 (pin 82 GPP_E_4)
   e. cExpress-RLP - 685 (pin 112 ISH_UART0_RXD)
+  f. COM-HPC-cBLS - 940 (pin 258 SATA_SDATAOUT1)
+  g. Express-PTL  - 601 (pin 41 GPP_E15)
 =============================================
 =============================================
 */
@@ -115,7 +117,6 @@ static int os_release(void)
         printk(KERN_INFO "OS not supported!\n");
         return -1;
         }
-
 }
 
 void delay(unsigned long int ticks)
@@ -151,6 +152,8 @@ static irqreturn_t gpio_irq_handler(int irq, void *dev_id) {
     
     /**clearing the interrupt flag***/
     write_ec(0x68, 0x00);
+    write_ec(0x69, 0x00);
+
     return IRQ_HANDLED;
 }
 
@@ -223,6 +226,14 @@ static int check_board_kernel(void)
 		  gpio_pin = 685;
 		  pr_info("%s, GPIO Pin = %d\n",board_name,gpio_pin);
 	      }
+	      else if(strcmp(board_name, "COM-HPC-cBLS") == 0){
+                  gpio_pin = 940;
+                  pr_info("COM-HPC-cBLS, GPIO Pin = %d\n",gpio_pin);
+              }
+	       else if ((strcmp(board_name, "Express-PTL") == 0) || strstr(board_name, "Express-PTL")) {
+                  gpio_pin = 601;
+                  pr_info("Express-PTL, GPIO Pin = %d\n",gpio_pin);
+              }
 	      else {
 		  pr_info("Board not supported\n");
 		  filp_close(file, NULL);
@@ -370,22 +381,6 @@ static int __init gpio_init(void) {
         return ret;
     }
   
-    // Request the GPIO pin
-    ret = gpio_request(gpio_pin, "ec_gpio_irq");
-    if (ret) {
-        pr_err("Failed to request GPIO %d\n", gpio_pin);
-        return ret;
-    }
-
-    // Get the IRQ number for the GPIO pin
-    irq_number = gpio_to_irq(gpio_pin);
-    pr_info("irq number = %d\n", irq_number);
-    if (irq_number < 0) {
-        pr_err("Failed to get IRQ number for GPIO %d\n", gpio_pin);
-        gpio_free(gpio_pin);
-        return irq_number;
-    }
-    
     if (strncasecmp(trigger_type, "edge", strlen("edge")) == 0) {
       new_trigger_type = IRQF_TRIGGER_FALLING;  // Edge trigger
      reg = 0x01;
@@ -408,7 +403,22 @@ static int __init gpio_init(void) {
       reg = 0x00;
       return -1;
     }
-    
+
+    // Request the GPIO pin
+    ret = gpio_request(gpio_pin, "ec_gpio_irq");
+    if (ret) {
+        pr_err("Failed to request GPIO %d\n", gpio_pin);
+        return ret;
+    }
+
+    // Get the IRQ number for the GPIO pin
+    irq_number = gpio_to_irq(gpio_pin);
+    pr_info("irq number = %d\n", irq_number);
+    if (irq_number < 0) {
+        pr_err("Failed to get IRQ number for GPIO %d\n", gpio_pin);
+        gpio_free(gpio_pin);
+        return irq_number;
+    }
 
     // Request IRQ with the current trigger type
     ret = request_irq(irq_number, gpio_irq_handler, new_trigger_type, "ec_gpio_irq", NULL);
@@ -419,9 +429,9 @@ static int __init gpio_init(void) {
     }
     
     irq_set_irq_type(irq_number, new_trigger_type);
-    
      /**clearing the interrupt flag***/
-	write_ec(0x68, 0x00);
+     write_ec(0x68, 0x00);
+     write_ec(0x69, 0x00);
     
     /**Enabling the EC interrupts**/
      write_ec(0x64, reg);

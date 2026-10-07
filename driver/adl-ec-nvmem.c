@@ -135,14 +135,14 @@ static int adl_bmc_nvmem_read(void *context, unsigned int offset, void *val, siz
 	if(size > 32)
 	{
 	    delay(200);
-	    ret = ReadMem(1, offset + i, (char*)val + i, 32);
+	    ret = ReadMem(1, offset + i, (char*)(val + i), 32);
 	    size -= 32;
 	}
 	else
 	{
 	    delay(200);
-	    ret = ReadMem(1, offset + i, (char*)val + i, size);
-	    size = 0;
+	    ret = ReadMem(1, offset + i, (char*)(val + i), size);
+	    size -= size;
 	}
 
 	if (ret < 0)
@@ -173,14 +173,14 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
 	if(size > 32)
 	{
 	    delay(200);
-	    ret = WriteMem(1, offset + i, (char*)val + i, 32);
+	    ret = WriteMem(1, offset + i, (char*)(val + i), 32);
 	    size -= 32;
 	}
 	else
 	{
 	    delay(200);
-	    ret = WriteMem(1, offset + i, (char*)val + i, size);
-	    size = 0;
+	    ret = WriteMem(1, offset + i, (char*)(val + i), size);
+	    size -= size;
 	}
 
 	if (ret < 0)
@@ -190,7 +190,7 @@ static int adl_bmc_nvmem_write(void *context, unsigned int offset, void *val, si
         }
     }
     mutex_unlock(&adl_dev->mx_nvmem);
-    return ret;
+    return 0;
 }
 
 struct kobj_attribute attr0 = __ATTR_RO(nvmemcap);
@@ -198,7 +198,6 @@ struct kobj_attribute attr0 = __ATTR_RO(nvmemcap);
 static struct nvmem_config adl_bmc_nvmem_config = {
     .name = "nvmem",
     .read_only = false,
-//    .word_size = 4,
     .stride = 4,
     .reg_read = adl_bmc_nvmem_read,
     .reg_write = adl_bmc_nvmem_write,
@@ -208,8 +207,6 @@ static int adl_bmc_nvmem_probe(struct platform_device *pdev)
 {
     int ret;
     struct nvmem_device *nvdev;
-    struct module owner;
-
 
     adl_dev = dev_get_drvdata(pdev->dev.parent);
 
@@ -224,7 +221,7 @@ static int adl_bmc_nvmem_probe(struct platform_device *pdev)
 
     adl_bmc_nvmem_config.dev = &pdev->dev;
     adl_bmc_nvmem_config.size = storagesize;
-    adl_bmc_nvmem_config.owner = &owner;
+    adl_bmc_nvmem_config.owner = THIS_MODULE;
 
     debug_printk("probe ..............\n");
 
@@ -252,7 +249,7 @@ static int adl_bmc_nvmem_probe(struct platform_device *pdev)
 
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
-void adl_bmc_nvmem_remove(struct platform_device *pdev)
+static void adl_bmc_nvmem_remove(struct platform_device *pdev)
 #else
 static int adl_bmc_nvmem_remove(struct platform_device *pdev)
 #endif

@@ -39,7 +39,7 @@ struct boarderrlog {
     unsigned char reserved[7];
 };
 
-int GetManufData(unsigned int nDataInfo, unsigned char* pData, unsigned int nLen)
+static int GetManufData(unsigned int nDataInfo, unsigned char* pData, unsigned int nLen)
 {
     int i, j;
     unsigned char Status;
@@ -106,7 +106,7 @@ int GetManufData(unsigned int nDataInfo, unsigned char* pData, unsigned int nLen
     return -1;
 }
 
-int converttoint(const char *buf)
+static int converttoint(char *buf)
 {
     int i, result = 0;
     for(i = 0;buf[i] != 0; i++)
@@ -118,82 +118,7 @@ int converttoint(const char *buf)
     return result;
 }
 
-unsigned short get_voltage_id(unsigned char ch)
-{
-    int ret;
-    unsigned char buff[32];
-    unsigned short id = 0;
-
-    if (ch >= 16)
-	return id;
-
-    memset(buff, 0, sizeof(buff));
-
-    ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GET_VOLT_DESC, (u8*)buff, 0, EC_REGION_1);
-
-    if (ret < 0)
-	return ret;
-
-    if (ret < 16)
-	return id;
-    if ((ch * 2) >= ret)
-	return id;
-
-    id = ((unsigned short)buff[2 * ch]) << 8 | buff[2 * ch + 1];
-
-    return id;
-}
-
-unsigned char get_cur_channel(void)
-{
-    static unsigned char channel = 0;
-    static unsigned char currentch = 0;
-
-    if (!currentch)
-    {
-	int i;
-	for (i = 0; i < 16; i++)
-	{
-	    if (get_voltage_id(i) == 0x000F) {
-		channel = i;
-		currentch = 1;
-		return channel;
-	    }
-	}
-    }
-
-    return channel;
-}
-
-unsigned short get_scale_factor(unsigned char ch)
-{
-    static unsigned short scale[16];
-    static unsigned char scaleavail = 0;
-
-    if (ch >= 16)
-	return 0;
-
-    if (!scaleavail)
-    {
-	unsigned char ret, i, buff[32];
-	memset(buff, 0, sizeof(buff));
-
-	ret = adl_bmc_ec_read_device(ADL_BMC_OFS_GET_ADC_SCALE, (u8*)buff, 0, EC_REGION_1);
-
-	if ((ret < 16) && (buff[0] == 0xf0))
-	    return 0;
-
-	if ((ch * 2) >= ret)
-	    return 0;
-
-	for (i = 0; i < ret / 2; i++)
-	    scale[i] = ((unsigned short)buff[i*2]) << 8 | buff[i * 2 + 1];
-	scaleavail = 1;
-    }
-    return scale[ch];
-}
-
-int get_voltage_value(unsigned char ch, uint16_t *pValue)
+static int get_voltage_value(unsigned char ch, uint16_t *pValue)
 {
     int ret;
     uint16_t buff_hm=0;
@@ -214,7 +139,7 @@ int get_voltage_value(unsigned char ch, uint16_t *pValue)
     return 0;
 }
 
-int get_voltage_description(const char *Buffer, uint8_t *ch)
+static int get_voltage_description(const char *Buffer, uint8_t *ch)
 {
     uint8_t i,len;		
     len = strlen(Buffer);
@@ -235,56 +160,7 @@ int get_voltage_description(const char *Buffer, uint8_t *ch)
     return -1;
 }
 
-
-int get_voltage_description_ext(unsigned char Ch , char *Buffer , bool truncate)
-{
-    static char desc[16][17] = { { 0 } };
-    static bool descriptionavailable = false;
-
-    if (Ch >= 16)
-	return -1;	
-    if (!descriptionavailable)
-    {
-	int i;
-	unsigned char buf[32];	
-	for (i = 0; i < 16; i++){
-	    unsigned char len;
-	    int ret;
-	    memset(buf, 0, sizeof(buf));
-
-	    ret = adl_bmc_ec_read_device(ADL_BMC_OFS_EXT_HW_DESC, (u8*)buf, 0, EC_REGION_1);
-
-	    if (ret <= 0 && i == 15)
-		return -1;
-	    if (ret != 16){
-		return -1;
-	    }
-
-	    buf[ret] = 0;
-
-
-	    len = converttoint(buf + 1);
-	    strcpy(desc[len], (char *)buf);
-	};
-
-	descriptionavailable = true;
-    }
-    if (strlen(desc[Ch]) == 0) {
-	return -1;
-    }
-
-    if (truncate){
-	strcpy(Buffer, &(desc[Ch][4]));
-    }
-
-    else{
-	strcpy(Buffer, desc[Ch]);
-    }
-
-    return 0;
-}
-
-int get_voltage(const char *cmp, uint16_t* pValue)
+static int get_voltage(const char *cmp, uint16_t* pValue)
 {
     unsigned char ch=0;
 
@@ -316,7 +192,7 @@ static int pos;
 
 static int read_error_log(int pos, void *buf, int len)
 {
-
+	int i;
 	char pData[] = {0x2, 0x1, 0x0, 0x5, 0, pos};
 
 	if (adl_bmc_ec_write_device(EC_WO_ADDR_IIC_CMD_START, pData, 6, EC_REGION_2) == 0)
@@ -324,7 +200,6 @@ static int read_error_log(int pos, void *buf, int len)
 		pData[0] = 4;
 		if (adl_bmc_ec_write_device(EC_RW_ADDR_IIC_BMC_STATUS, pData, 1, EC_REGION_2) == 0)
 		{
-			int i;
 			for (i = 0; i < 100; i++)
 			{
 				if (adl_bmc_ec_read_device(EC_RW_ADDR_IIC_BMC_STATUS, pData, 1, EC_REGION_2) == 0)
@@ -360,7 +235,7 @@ static ssize_t sysfs_show_error_log(struct kobject *kobj, struct kobj_attribute 
     if (ret < 0)
 	return 0;
 
-    ret = sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %u BIOSSel %d\n", \
+    ret = sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %d BIOSSel %d\n", \
 		    errlog.errnum, errlog.flags, errlog.restartevent, errlog.pwrcycles, errlog.bootcnt, errlog.time, errlog.status, errlog.cputemp, errlog.boardtemp, errlog.totalontime, errlog.BIOS_selected);
 
     return ret;
@@ -370,7 +245,7 @@ static ssize_t sysfs_store_error_log(struct kobject *kobj, struct kobj_attribute
 {
     pos = converttoint((char *)buf);
 
-    if(pos < 0 || pos > 32)
+    if(pos < 0 && pos > 32)
     {
 	    return -1;
     }
@@ -388,13 +263,13 @@ static ssize_t cur_pos_error_log_show(struct kobject *kobj, struct kobj_attribut
     if (ret < 0)
 	return ret;
 
-    return sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %u BIOSSel %d\n", \
+    return sprintf(buf, "ErrorNumber: %hu\nFlags: 0x%x\nRestartEvent: 0x%x\nPowerCycle: %u\nBootCount: %u\nTime : %u\nStatus : 0x%x\nCPUTemp : %d\nBoardTemp : %d\n TotalOnTime %d BIOSSel %d\n", \
 		    errlog.errnum, errlog.flags, errlog.restartevent, errlog.pwrcycles, errlog.bootcnt, errlog.time, errlog.status, errlog.cputemp, errlog.boardtemp, errlog.totalontime, errlog.BIOS_selected);
 }
 
 static ssize_t sysfs_show_err_num_des(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int cnt; 
+	int cnt, ret; 
 	unsigned char buff[33];
 	int errcode;
 	struct boarderrlog errlog={0};
@@ -407,7 +282,6 @@ static ssize_t sysfs_show_err_num_des(struct kobject *kobj, struct kobj_attribut
 	for (cnt = 0; cnt < 32; cnt ++)
 	{
 		unsigned short errnumcv;
-		int ret;
 
 		ret = read_error_log(cnt, (void*)&errlog, sizeof(struct boarderrlog));	
 
@@ -1056,7 +930,7 @@ static ssize_t sysfs_store_bios_source(struct kobject *kobj, struct kobj_attribu
     int ret, data;
     data = converttoint((char *)buf);
 
-    if(data > 4 || data < 0)
+    if(data > 4 && data < 0)
     {
             return -1;
     }
@@ -1329,7 +1203,7 @@ ret_err:
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
-void boardinfo_remove(struct platform_device *pdev)
+static void boardinfo_remove(struct platform_device *pdev)
 #else
 static int boardinfo_remove(struct platform_device *pdev)
 #endif

@@ -173,7 +173,7 @@ uint32_t EApiPwrUpWDogStart(uint32_t Timeout)
 	char value[256] = {0};
 	int ret;
 
-	if (Timeout == 0 || Timeout > 65535) {
+	if (Timeout < 60 || Timeout > 65535) {
 		errno = EINVAL;
 		return EAPI_STATUS_INVALID_PARAMETER;
 	}
